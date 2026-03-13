@@ -25,3 +25,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Documentation files (local only)
+PRODUCTION_READINESS_AUDIT.md
+INTEGRATION_GUIDE.md
+CODE_REVIEW_REPORT.md
+ACTION_ITEMS_WITH_EXAMPLES.md
+TAILWIND_CONVERSION_COMPLETE.md
+FIXES_APPLIED.md
+EXECUTIVE_SUMMARY.md
