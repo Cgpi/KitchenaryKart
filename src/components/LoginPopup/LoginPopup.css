@@ -1,0 +1,134 @@
+/* ── Overlay ───────────────────────────────────────────────── */
+.login-popup-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;           /* prevents card from touching screen edges on mobile */
+  box-sizing: border-box;
+}
+
+/* ── Popup card ────────────────────────────────────────────── */
+.login-popup {
+  background: rgba(243, 230, 230, 0.985);
+  backdrop-filter: blur(15px);
+  border-radius: 15px;
+  padding: 2.5rem 1.5rem 1.5rem;
+  width: 100%;             /* full width on tiny screens */
+  max-width: 380px;        /* caps at 380px on wider screens */
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+/* ── Inputs ────────────────────────────────────────────────── */
+.login-popup input {
+  width: 100%;
+  padding: 11px 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  color: #050505;
+  font-size: clamp(0.875rem, 3vw, 1rem);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.login-popup input::placeholder {
+  color: rgba(6, 6, 6, 0.7);
+}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.login-popup button {
+  background: #af2031;
+  color: white;
+  border: none;
+  padding: 11px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: clamp(0.875rem, 3vw, 1rem);
+  margin-top: 10px;
+  transition: background 0.3s;
+  width: 100%;
+}
+
+.login-popup button:hover {
+  background: rgb(232, 46, 68);
+}
+
+/* ── Messages ──────────────────────────────────────────────── */
+.message {
+  font-size: 0.875rem;
+  padding: 5px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.message.success { color: green; }
+.message.error   { color: #af2031; }
+
+/* ── Forgot password link ──────────────────────────────────── */
+.forgot-password-link {
+  font-size: 0.875rem;
+  color: #af2031;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Signup link ───────────────────────────────────────────── */
+.signup-link {
+  font-size: 0.875rem;
+  margin-top: 10px;
+}
+
+.signup-link a {
+  color: #ff5500;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.signup-link a:hover {
+  text-decoration: underline;
+}
+
+/* ── Heading ───────────────────────────────────────────────── */
+.login-popup h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.3rem;
+  color: #1a1a1a;
+  padding-top: 8px;
+}
+
+/* ── Close button ──────────────────────────────────────────── */
+.login-popup .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.3rem;
+  background: transparent !important;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  line-height: 1;
+  width: auto;
+  padding: 2px 6px;
+  margin-top: 0;
+  transition: color 0.2s;
+}
+
+.login-popup .close-btn:hover {
+  background: transparent !important;
+  color: #af2031;
+}

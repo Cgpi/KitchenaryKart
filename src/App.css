@@ -1,0 +1,20 @@
+/* App.css — brand overrides, ensures Tailwind fonts win over Bootstrap */
+
+/* Force DM Sans as the global font (Bootstrap imports after index.css and would override) */
+html, body, input, textarea, select, button {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', Georgia, serif !important;
+}
+
+/* Ensure body background stays on brand */
+body {
+  background-color: #FDF8F3 !important;
+}
+
+/* React Range slider — brand color */
+.range-thumb {
+  background: #B91C1C !important;
+}

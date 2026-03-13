@@ -1,0 +1,68 @@
+{
+  "name": "software_development",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.21",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.7.7",
+    "caniuse-lite": "^1.0.30001727",
+    "country-state-city": "^3.2.1",
+    "dayjs": "^1.11.13",
+    "firebase": "^11.10.0",
+    "framer-motion": "^12.35.1",
+    "html2pdf.js": "^0.14.0",
+    "i18next-browser-languagedetector": "^8.0.4",
+    "jspdf": "^4.2.0",
+    "jspdf-autotable": "^5.0.2",
+    "lucide-react": "^0.472.0",
+    "number-to-words": "^1.2.4",
+    "pdfmake": "^0.2.20",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-helmet-async": "^2.0.5",
+    "react-icons": "^5.4.0",
+    "react-quill": "^0.0.2",
+    "react-range": "^1.10.0",
+    "react-router-dom": "^6.26.2",
+    "react-scripts": "^5.0.1",
+    "react-slick": "^0.30.3",
+    "react-toastify": "^11.0.5",
+    "recharts": "^2.15.1",
+    "slick-carousel": "^1.8.1",
+    "swiper": "^12.1.2",
+    "web-vitals": "^2.1.4",
+    "zustand": "^5.0.11"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^3.4.19"
+  }
+}

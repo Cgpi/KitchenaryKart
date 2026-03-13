@@ -1,0 +1,427 @@
+/* ─── Google Fonts ──────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+/* ─── Tailwind Directives ────────────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base Layer ─────────────────────────────────────────────────── */
+@layer base {
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply font-body text-charcoal bg-cream-100 antialiased;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Prevent overflow on all screens */
+  #root {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-bold leading-tight;
+  }
+
+  h4,
+  h5,
+  h6 {
+    @apply font-body font-semibold leading-tight;
+  }
+
+  a {
+    @apply text-charcoal no-underline;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  input,
+  textarea,
+  select {
+    @apply font-body;
+  }
+
+  /* Remove default list styles in nav contexts */
+  nav ul,
+  nav ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* ─── Component Layer ────────────────────────────────────────────── */
+@layer components {
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand text-white font-body font-semibold text-sm rounded-xl transition-all duration-200 hover:bg-brand-700 hover:shadow-button hover:-translate-y-0.5 active:translate-y-0 active:shadow-none focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-brand font-body font-semibold text-sm border border-brand rounded-xl transition-all duration-200 hover:bg-brand hover:text-white hover:shadow-button focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 bg-transparent text-charcoal font-body font-medium text-sm rounded-lg transition-all duration-200 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-300;
+  }
+
+  .btn-icon {
+    @apply inline-flex items-center justify-center w-10 h-10 bg-transparent text-charcoal rounded-full transition-all duration-200 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-300;
+  }
+
+  /* ── Product Card ── */
+  .product-card {
+    @apply bg-white rounded-2xl overflow-hidden shadow-card transition-all duration-300 cursor-pointer hover:shadow-card-hover hover:-translate-y-1;
+  }
+
+  .product-card-image {
+    @apply relative overflow-hidden bg-stone-50;
+    aspect-ratio: 1 / 1;
+  }
+
+  .product-card-image img {
+    @apply w-full h-full object-cover transition-transform duration-500 group-hover:scale-105;
+  }
+
+  .product-card-body {
+    @apply p-4;
+  }
+
+  .product-name {
+    @apply font-body font-semibold text-charcoal text-sm leading-snug line-clamp-2 mb-1;
+  }
+
+  .product-price {
+    @apply font-body font-bold text-brand text-base;
+  }
+
+  .product-price-original {
+    @apply font-body text-stone-400 text-sm line-through ml-2;
+  }
+
+  /* ── Section Header ── */
+  .section-header {
+    @apply flex items-center justify-between mb-8;
+  }
+
+  .section-title {
+    @apply font-display font-bold text-2xl md:text-3xl text-charcoal;
+  }
+
+  .section-subtitle {
+    @apply font-body text-stone-500 text-sm mt-1;
+  }
+
+  .section-link {
+    @apply font-body font-semibold text-sm text-brand flex items-center gap-1 hover:gap-2 transition-all duration-200;
+  }
+
+  /* ── Container ── */
+  .container-main {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* ── Badge ── */
+  .badge {
+    @apply inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-brand text-white text-[10px] font-bold rounded-full;
+  }
+
+  /* ── Skeleton Loader ── */
+  .skeleton {
+    @apply bg-gradient-to-r from-stone-100 via-stone-200 to-stone-100 bg-[length:200%_100%] animate-shimmer rounded-lg;
+  }
+
+  /* ── Star Rating ── */
+  .star-rating {
+    @apply flex items-center gap-0.5;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    @apply border-0 border-t border-stone-200 my-0;
+  }
+
+  /* ── Category Pill ── */
+  .category-pill {
+    @apply inline-flex flex-col items-center gap-2 px-4 py-3 bg-white rounded-2xl shadow-card cursor-pointer transition-all duration-200 hover:shadow-card-hover hover:-translate-y-1 group whitespace-nowrap;
+  }
+
+  .category-pill-image {
+    @apply w-14 h-14 rounded-full overflow-hidden object-cover border-2 border-transparent group-hover:border-brand-300 transition-all duration-200;
+  }
+
+  .category-pill-name {
+    @apply font-body text-xs font-semibold text-charcoal uppercase tracking-wide text-center max-w-[80px] leading-tight;
+  }
+}
+
+/* ─── Utility Layer ──────────────────────────────────────────────── */
+@layer utilities {
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #E7E5E4 transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #D6D3D1;
+    border-radius: 2px;
+  }
+
+  /* Smooth image fade-in when loaded */
+  .img-fade {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .img-fade.loaded {
+    opacity: 1;
+  }
+}
+
+/* ─── Number input arrows hidden ─────────────────────────────────── */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* ─── Page transition ─────────────────────────────────────────────── */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 300ms ease;
+}
+
+/* ─── React Slick Carousel Overrides ────────────────────────────── */
+.slick-track {
+  display: flex !important;
+  align-items: stretch;
+}
+
+.slick-slide {
+  height: inherit !important;
+}
+
+.slick-slide>div {
+  height: 100%;
+}
+
+.slick-dots li button:before {
+  color: #B91C1C !important;
+}
+
+.slick-dots li.slick-active button:before {
+  color: #B91C1C !important;
+}
+
+/* ─── React Toastify Overrides ───────────────────────────────────── */
+.Toastify__toast {
+  border-radius: 12px !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 14px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10) !important;
+}
+
+/* ─── Hero progress bar animation ───────────────────────────────── */
+@keyframes heroProgress {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+/* ─── Navbar mega-menu slide-down ────────────────────────────────── */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Price range slider thumbs ─────────────────────────────────── */
+.range-thumb-sm::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #B91C1C;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(185, 28, 28, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.range-thumb-sm::-webkit-slider-thumb:hover {
+  transform: scale(1.25);
+}
+
+.range-thumb-sm::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #B91C1C;
+  border: 2px solid white;
+  cursor: pointer;
+}
+
+.range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #B91C1C;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(185, 28, 28, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.range-thumb::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(185, 28, 28, 0.45);
+}
+
+.range-thumb::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #B91C1C;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(185, 28, 28, 0.35);
+  cursor: pointer;
+}
+
+/* ─── Hot Equipment — vertical auto-scroll animations ───────────── */
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes scrollDown {
+  0% {
+    transform: translateY(-50%);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-scroll-up {
+  animation: scrollUp 28s linear infinite;
+}
+
+.animate-scroll-up:hover {
+  animation-play-state: paused;
+}
+
+.animate-scroll-down {
+  animation: scrollDown 28s linear infinite;
+}
+
+.animate-scroll-down:hover {
+  animation-play-state: paused;
+}
+
+/* ─── Swiper Overrides ───────────────────────────────────────────── */
+.swiper-button-next,
+.swiper-button-prev {
+  color: #B91C1C !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #B91C1C !important;
+}
