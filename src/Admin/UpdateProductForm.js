@@ -161,6 +161,10 @@ const fetchRelatedProducts = async () => {
         (option) => option.value
       );
       setProduct({ ...product, [name]: selectedOptions });
+    } else if (name === "taxPercentage") {
+      const numValue = Number(value);
+      const safeValue = isNaN(numValue) ? "" : Math.max(0, Math.min(100, numValue));
+      setProduct({ ...product, [name]: safeValue });
     } else {
       setProduct({ ...product, [name]: value });
     }
@@ -374,6 +378,8 @@ const handleUpdateRelatedProducts = async () => {
               value={product.taxPercentage || ""}
               onChange={handleChange}
               required
+              min="0"
+              max="100"
               className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <span className="text-sm">%</span>

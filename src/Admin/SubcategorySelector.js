@@ -20,7 +20,7 @@ import axios from "axios";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL
     ? process.env.REACT_APP_API_BASE_URL.replace("/Api", "")
-    : "";
+    : 'https://kitchenarykart.com/kitchen_app';
 
 const SubcategorySelector = ({ slotIndex = 1 }) => {
     // suffix: slot 1 → "" (empty), slot 2–5 → "2", "3", "4", "5"

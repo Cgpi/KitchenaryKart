@@ -2,6 +2,37 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## 🚀 Setup Instructions (REQUIRED BEFORE RUNNING)
+
+### 1. Install Dependencies
+```bash
+npm install
+```
+
+### 2. Configure Environment Variables
+This project requires a `.env` file with configuration. Follow these steps:
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Open `.env` and fill in your Firebase credentials:
+   ```env
+   REACT_APP_API_BASE_URL=https://kitchenarykart.com/kitchen_app/Api
+   REACT_APP_FIREBASE_API_KEY=your_api_key_here
+   REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+   REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   REACT_APP_FIREBASE_APP_ID=your_app_id
+   ```
+
+3. Save the file and restart the development server
+
+### 3. Verify Setup
+The app will validate all required environment variables on startup. If any are missing, you'll see an error message with next steps.
+
 ## Available Scripts
 
 In the project directory, you can run:

@@ -21,7 +21,7 @@ const imgSrc = (img) =>
   img
     ? img.startsWith("https")
       ? img
-      : `${process.env.REACT_APP_API_BASE_URL.replace("/Api", "")}/${img}`
+      : `${process.env.REACT_APP_API_BASE_URL ? process.env.REACT_APP_API_BASE_URL.replace("/Api", "") : 'https://kitchenarykart.com/kitchen_app'}/${img}`
     : logo;
 
 // ── Sub-components ─────────────────────────────────────────────────────

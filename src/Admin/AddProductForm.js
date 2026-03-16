@@ -167,7 +167,20 @@ const AddProductForm = ({ onCancel, fetchProducts, categories, subcategories, su
     // Handle changes to input fields
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        const newValue = type === 'checkbox' ? checked : (['price', 'taxPercentage', 'quantity', 'power'].includes(name) ? Number(value) || '' : value);
+        let newValue;
+        if (type === 'checkbox') {
+            newValue = checked;
+        } else if (['price', 'taxPercentage', 'quantity', 'power'].includes(name)) {
+            const numValue = Number(value);
+            if (name === 'taxPercentage') {
+                // Clamp tax percentage between 0 and 100
+                newValue = isNaN(numValue) ? '' : Math.max(0, Math.min(100, numValue));
+            } else {
+                newValue = isNaN(numValue) ? '' : Math.max(0, numValue);
+            }
+        } else {
+            newValue = value;
+        }
         setProduct({ ...product, [name]: newValue });
     };
 
@@ -319,6 +332,7 @@ if (response.data && response.data.id) {
                     value={product.taxPercentage}
                     onChange={handleChange}
                     onKeyDown={(e) => handleEnterKey(e, inputRefs.hsn_code)}
+                    inputProps={{ min: 0, max: 100 }}
                 />
 
                 {/* HSN Code */}

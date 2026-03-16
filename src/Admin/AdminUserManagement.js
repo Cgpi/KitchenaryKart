@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL.replace("/Api","");
+const BASE_URL = process.env.REACT_APP_API_BASE_URL
+  ? process.env.REACT_APP_API_BASE_URL.replace("/Api","")
+  : 'https://kitchenarykart.com/kitchen_app';
 const getAuthConfig = () => ({
   headers: {
     "x-Authorization": `Bearer ${localStorage.getItem("adminToken")}`,

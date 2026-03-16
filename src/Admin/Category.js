@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL.replace("/Api", "");
+// Safe BASE_URL with fallback
+const BASE_URL = process.env.REACT_APP_API_BASE_URL 
+  ? process.env.REACT_APP_API_BASE_URL.replace("/Api", "")
+  : 'https://kitchenarykart.com/kitchen_app';
 
 const CategoryManager = () => {
   const [categories, setCategories] = useState([]);
