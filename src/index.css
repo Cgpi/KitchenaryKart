@@ -217,6 +217,11 @@
     display: none;
   }
 
+  /* Custom zoom cursor with + icon (fallbacks to zoom-in) */
+  .cursor-zoom-plus {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='13' cy='13' r='9' fill='white' stroke='%23111' stroke-width='2'/%3E%3Cpath d='M19.5 19.5 L28 28' stroke='%23111' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M13 9 v8 M9 13 h8' stroke='%23111' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 16 16, zoom-in;
+  }
+
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: #E7E5E4 transparent;
