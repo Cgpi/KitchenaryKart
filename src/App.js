@@ -15,6 +15,7 @@ import "./App.css";
 
 // ── Home sections ─────────────────────────────────────────────────────────────
 const HeroBanner = lazy(() => import("./HeroBanner"));
+const CategoryHeroBanner = lazy(() => import("./CategoryHeroBanner"));
 const TopCategories = lazy(() => import("./TopCategories"));
 const MostSellingProductList = lazy(() => import("./MostSelling"));
 const NewArrivalProductList = lazy(() => import("./NewArrivals"));
@@ -130,11 +131,12 @@ const App = () => {
                 >
                   <HeroBanner />
                   <TopCategories />
-                  <MostSellingProductList />
-                  <NewArrivalProductList />
+                  {/* <MostSellingProductList /> */}
+                  {/* <NewArrivalProductList /> */}
 
                   {/* 5 category sections + subcategory product sections (slots 1–5) */}
                   <CategoryWithSubcategories />
+                  <CategoryHeroBanner />
                   <SubcategoryWithSubcategories />
                   <CategoryWithSubcategories slot={2} />
                   <SubcategoryWithSubcategories slot={2} />

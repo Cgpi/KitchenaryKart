@@ -33,7 +33,7 @@ function Navbar() {
   const [activeCategory, setActiveCategory] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(null);
-  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 640);
+ const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 990);
 
   const closeTimer = useRef(null);
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ function Navbar() {
 
   // ── Resize listener ──────────────────────────────────────────────
   useEffect(() => {
-    const onResize = () => setIsDesktop(window.innerWidth >= 640);
+    const onResize = () => setIsDesktop(window.innerWidth >= 990);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -129,54 +129,58 @@ function Navbar() {
       <nav
         aria-label="Category navigation"
         style={{ display: isDesktop ? "block" : "none" }}
-        className="relative bg-brand sticky top-14 sm:top-16 z-50"
+        className="relative bg-white sticky top-14 sm:top-16 z-50"
       >
         {/* ── Tab Bar — full viewport width, items share space equally ── */}
-        <ul
-          className="flex items-center h-12 m-0 p-0 w-full"
-          role="menubar"
-          aria-label="Product categories"
+{/* ── Tab Bar — full width, items shrink to fit ── */}
+<ul
+  className="flex items-center h-12 m-0 p-0 w-full"
+  role="menubar"
+  aria-label="Product categories"
+>
+  {categories.length > 0
+    ? categories.map((cat) => (
+        <li
+          key={cat.id}
+          className="flex-shrink list-none h-full"
+          role="none"
+          onMouseEnter={() => openMenu(cat.id)}
+          onMouseLeave={scheduleClose}
         >
-          {categories.length > 0 ? categories.map((cat) => (
-            <li
-              key={cat.id}
-              className="flex-1 list-none h-full"
-              role="none"
-              onMouseEnter={() => openMenu(cat.id)}
-              onMouseLeave={scheduleClose}
-            >
-              <button
-                role="menuitem"
-                aria-expanded={activeCategory === cat.id}
-                aria-haspopup="true"
-                onClick={() => {
-                  setActiveCategory(null);
-                  navigate(`/category/${cat.id}/subcategories`);
-                }}
-                className={`flex items-center justify-center gap-1 w-full h-12 text-[11px] font-bold uppercase
-                             tracking-wide transition-all duration-150 ${
-                  activeCategory === cat.id
-                    ? "bg-white text-brand"
-                    : "text-white/90 hover:text-white hover:bg-white/15"
-                }`}
-              >
-                <span className="truncate px-1">{cat.name}</span>
-                <ChevronDown
-                  size={10}
-                  className={`flex-shrink-0 transition-transform duration-200 ${
-                    activeCategory === cat.id ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-            </li>
-          )          ) : categoriesLoading ? (
-            Array.from({ length: 9 }).map((_, i) => (
-              <li key={`nav-skeleton-${i}`} className="flex-1 list-none h-full flex items-center justify-center">
-                <div className="h-3 w-16 sm:w-20 bg-white/20 rounded animate-pulse" />
-              </li>
-            ))
-          ) : null}
-        </ul>
+          <button
+            role="menuitem"
+            aria-expanded={activeCategory === cat.id}
+            aria-haspopup="true"
+            onClick={() => {
+              setActiveCategory(null);
+              navigate(`/category/${cat.id}/subcategories`);
+            }}
+            className={`relative flex items-center justify-center gap-1 h-12 px-2 text-[11px] font-bold uppercase
+             tracking-wide transition-all duration-150
+             after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
+             ${activeCategory === cat.id ? "after:w-full text-black" : "text-black/90 hover:text-black hover:after:w-full"}`}
+          >
+            <span className="truncate">{cat.name}</span>
+            <ChevronDown
+              size={10}
+              className={`flex-shrink-0 transition-transform duration-200 ${
+                activeCategory === cat.id ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+        </li>
+      ))
+    : categoriesLoading
+    ? Array.from({ length: 9 }).map((_, i) => (
+        <li
+          key={`nav-skeleton-${i}`}
+          className="flex-shrink list-none h-full flex items-center justify-center"
+        >
+          <div className="h-3 w-16 sm:w-20 bg-white/20 rounded animate-pulse" />
+        </li>
+      ))
+    : null}
+</ul>
 
         {/* ══ MEGA MENU PANEL ══════════════════════════════════════
             Rendered as a sibling of the tab bar — NOT inside the
@@ -191,7 +195,7 @@ function Navbar() {
             className="absolute top-full left-0 right-0 bg-white z-[9999] flex flex-col"
             style={{
               height: "360px",          /* fixed constant height */
-              borderTop: "3px solid #B91C1C",
+              // borderTop: "3px solid #B91C1C",
               boxShadow: "0 32px 80px rgba(0,0,0,0.13), 0 8px 24px rgba(0,0,0,0.08)",
               animation: "slideDown 0.18s cubic-bezier(0.16,1,0.3,1) forwards",
             }}
@@ -344,27 +348,30 @@ function Navbar() {
       <nav
         aria-label="Category navigation"
         style={{ display: isDesktop ? "none" : "block" }}
-        className="bg-brand sticky top-14 sm:top-16 z-40"
+       className="bg-white border-b border-stone-200 sticky top-14 sm:top-16 z-40"
       >
         <div className="container-main">
           <div className="flex items-center justify-between h-12">
-            <button
-              onClick={() => navigate("/all-subcategories")}
-              className="flex items-center gap-2 text-white text-sm font-bold"
-            >
-              <Grid size={15} />
-              All Categories
-            </button>
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/15 text-white text-sm
-                         font-bold rounded-xl hover:bg-white/25 transition-colors border border-white/20"
-              aria-label="Open categories menu"
-            >
-              <Menu size={16} />
-              Browse
-            </button>
-          </div>
+  {/* LEFT → Browse */}
+  <button
+    onClick={() => setMobileOpen(true)}
+    className="flex items-center gap-2 px-4 py-2 bg-gray text-black text-sm
+               font-semibold rounded-lg hover:bg-black/80 transition"
+    aria-label="Open categories menu"
+  >
+    <Menu size={25} />
+   
+  </button>
+
+  {/* RIGHT → All Categories */}
+  <button
+    onClick={() => navigate("/all-subcategories")}
+    className="flex items-center gap-2 text-black text-sm font-semibold"
+  >
+    <Grid size={15} />
+    All Categories
+  </button>
+</div>
         </div>
       </nav>
 

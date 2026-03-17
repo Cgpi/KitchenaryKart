@@ -6,6 +6,7 @@ module.exports = {
   ],
   theme: {
     screens: {
+      phone: '990px',
       xs: "375px",
       sm: "640px",
       md: "768px",
@@ -60,11 +61,11 @@ module.exports = {
           900: '#1C1917',
         },
       },
-      fontFamily: {
-        display:  ['Playfair Display', 'Georgia', 'serif'],
-        body:     ['DM Sans', 'system-ui', 'sans-serif'],
-        sans:     ['DM Sans', 'system-ui', 'sans-serif'],
-      },
+     fontFamily: {
+  display: ['Roboto', 'Arial', 'sans-serif'], // headings
+  body: ['Roboto', 'Arial', 'sans-serif'],          // main text
+  sans: ['Roboto', 'Arial', 'sans-serif'],
+},
       spacing: {
         '18': '4.5rem',
         '22': '5.5rem',

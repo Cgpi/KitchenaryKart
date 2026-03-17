@@ -21,6 +21,7 @@ export default function TopCategories() {
   const [loading, setLoading] = useState(true);
   const sliderRef = useRef(null);
   const navigate = useNavigate();
+  
 
   useEffect(() => {
     api
@@ -43,29 +44,50 @@ export default function TopCategories() {
       navigate(`/products/subcategory/${id}`);
     }
   };
+const NextArrow = ({ onClick, disabled }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`hidden lg:flex absolute top-1/2 right-2 -translate-y-1/2 w-8 h-16 bg-gray-100  text-black shadow-md items-center justify-center transition-all z-20
+      ${disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100 hover:text-black"}`}
+  >
+    <ChevronRight size={24} />
+  </button>
+);
 
-  const sliderSettings = {
-    dots: false,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 8,
-    slidesToScroll: 2,
-    arrows: false,
-    autoplay: true,
-    autoplaySpeed: 3200,
-    swipeToSlide: true,
-    draggable: true,
-    responsive: [
-      { breakpoint: 1280, settings: { slidesToShow: 7 } },
-      { breakpoint: 1024, settings: { slidesToShow: 6 } },
-      { breakpoint: 768, settings: { slidesToShow: 5 } },
-      { breakpoint: 550, settings: { slidesToShow: 4 } },
-      { breakpoint: 380, settings: { slidesToShow: 3 } },
-    ],
-  };
+const PrevArrow = ({ onClick, disabled }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`hidden lg:flex absolute top-1/2 left-2 -translate-y-1/2 w-8 h-16 bg-gray-100  text-black shadow-md items-center justify-center transition-all z-20
+      ${disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100 hover:text-black"}`}
+  >
+    <ChevronLeft size={24} />
+  </button>
+);
 
+ const sliderSettings = {
+  dots: false,
+  infinite: false,
+  speed: 600,
+  slidesToShow: 4,
+  slidesToScroll: 1,
+  arrows: true, // enable arrows
+  nextArrow: <NextArrow />,
+  prevArrow: <PrevArrow />,
+  draggable: true,
+  swipeToSlide: true,
+  touchThreshold: 100,
+  cssEase: "ease-out",
+  responsive: [
+    { breakpoint: 1280, settings: { slidesToShow: 4 } },
+    { breakpoint: 1024, settings: { slidesToShow: 3.2 } },
+    { breakpoint: 768, settings: { slidesToShow: 2.2, arrows: false } }, // hide arrows on smaller
+    { breakpoint: 480, settings: { slidesToShow: 1.2, arrows: false } },
+  ],
+};
   return (
-    <section className="relative py-10 sm:py-14 overflow-hidden bg-white">
+    <section className="relative py-10 sm:py-14 overflow-hidden bg-gray">
       <Helmet>
         <title>Featured Categories | Kitchenary Kart</title>
         <meta name="description" content="Browse featured kitchen categories at Kitchenary Kart." />
@@ -75,51 +97,8 @@ export default function TopCategories() {
       {/* Background subtle gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-red-50/60 via-white to-orange-50/30 pointer-events-none" />
 
-      <div className="container-main relative">
+<div className="w-full pl-6 pr-0 lg:pl-10 lg:pr-0 relative">
 
-        {/* ══ Section header ════════════════════════════════════════ */}
-        <div className="flex items-center justify-between mb-8 sm:mb-10">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="flex items-center gap-1.5">
-                <div className="w-1 h-5 bg-[#B91C1C] rounded-full" />
-                <div className="w-1 h-3 bg-[#B91C1C]/40 rounded-full" />
-              </div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#B91C1C]">
-                Shop by Category
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">
-              Featured{" "}
-              <span className="text-[#B91C1C]">Categories</span>
-            </h2>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => sliderRef.current?.slickPrev()}
-              aria-label="Previous"
-              className="w-9 h-9 rounded-full flex items-center justify-center bg-white border-2 border-gray-200 text-gray-500 shadow-sm hover:border-[#B91C1C] hover:text-[#B91C1C] hover:shadow-md transition-all duration-200"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              onClick={() => sliderRef.current?.slickNext()}
-              aria-label="Next"
-              className="w-9 h-9 rounded-full flex items-center justify-center bg-white border-2 border-gray-200 text-gray-500 shadow-sm hover:border-[#B91C1C] hover:text-[#B91C1C] hover:shadow-md transition-all duration-200"
-            >
-              <ChevronRight size={16} />
-            </button>
-            <Link
-              to="/all-subcategories"
-              className="hidden sm:inline-flex items-center gap-1.5 ml-2 px-4 py-2 bg-[#B91C1C] text-white text-xs font-bold rounded-full hover:bg-red-700 transition-all duration-200 hover:shadow-lg"
-            >
-              <Grid3X3 size={12} />
-              All
-            </Link>
-          </div>
-        </div>
 
         {/* ══ Slider ════════════════════════════════════════════════ */}
         {loading ? (
@@ -127,57 +106,39 @@ export default function TopCategories() {
             {[...Array(8)].map((_, i) => <Skeleton key={i} />)}
           </div>
         ) : (
-          <Slider ref={sliderRef} {...sliderSettings}>
-            {categories.map((cat) => (
-              <div key={cat.id} className="px-1.5 outline-none">
-                <button
-                  onClick={() => go(cat.id, cat.subsubcategoryId)}
-                  aria-label={`Browse ${cat.name}`}
-                  className="group w-full flex flex-col items-center gap-0 outline-none"
-                >
-                  {/* Card */}
-                  <div
-                    className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-100 shadow-sm group-hover:shadow-xl group-hover:-translate-y-2 group-hover:border-[#B91C1C]/30 transition-all duration-300"
-                    style={{ maxWidth: "110px", margin: "0 auto" }}
-                  >
-                    {/* Image */}
-                    <img
-                      src={cat.image || logo}
-                      alt={cat.name}
-                      loading="lazy"
-                      onError={(e) => { e.target.onerror = null; e.target.src = logo; }}
-                      className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-400"
-                    />
-
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-[#B91C1C]/0 group-hover:bg-[#B91C1C]/[0.06] transition-colors duration-300" />
-
-                    {/* "Shop" badge */}
-                    <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center py-1.5 bg-[#B91C1C] text-white text-[9px] font-black uppercase tracking-widest translate-y-full group-hover:translate-y-0 transition-transform duration-250">
-                      Shop
-                    </div>
-                  </div>
-
-                  {/* Label */}
-                  <div className="mt-2.5 text-center px-0.5" style={{ maxWidth: "110px" }}>
-                    <span className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wide leading-tight text-gray-700 group-hover:text-[#B91C1C] transition-colors duration-200 line-clamp-2">
-                      {cat.name}
-                    </span>
-                  </div>
-                </button>
-              </div>
-            ))}
-          </Slider>
+        <Slider ref={sliderRef} {...sliderSettings}>
+  {categories.map((cat) => (
+    <div key={cat.id} className="px-2 flex-shrink-0">
+      <div
+        onClick={() => go(cat.id, cat.subsubcategoryId)}
+        className="group cursor-pointer"
+      >
+        <div className="w-full h-[300px] sm:h-[360px] md:h-[420px] lg:h-[460px] overflow-hidden bg-[#f5f5f5] ">
+          <img
+            src={cat.image || logo}
+            alt={cat.name}
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+          />
+        </div>
+        <div className="mt-3 text-center">
+          <p className="text-[12px] sm:text-[13px] md:text-[14px] tracking-[0.10em] uppercase text-[#222] font-medium">
+            SHOP {cat.name} →
+          </p>
+        </div>
+      </div>
+    </div>
+  ))}
+</Slider>
         )}
 
         {/* Mobile see-all */}
-        <div className="sm:hidden mt-7 text-center">
+        <div className="phone:hidden mt-7 text-center">
           <Link
-            to="/all-subcategories"
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#B91C1C] text-white text-sm font-bold rounded-full hover:bg-red-700 transition-all duration-200"
-          >
-            See All Categories <ArrowRight size={14} />
-          </Link>
+  to="/all-subcategories"
+  className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-gray-300 text-black text-sm font-bold rounded-full hover:bg-gray-700 transition-all duration-200"
+>
+  See All Categories <ArrowRight size={14} />
+</Link>
         </div>
       </div>
     </section>

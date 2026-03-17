@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ShoppingCart, User, Search, Mic, Heart } from "lucide-react";
+import { ShoppingCart, User, Search, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import logoimage from "../images/piclogo.png";
@@ -8,50 +8,40 @@ import useStore from "../store/useStore";
 const CustomHeader = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const debounceTimerRef = React.useRef(null);
-  let recognition = null;
 
-  // ── Zustand store ────────────────────────────────────────────────
   const { user, setUser, cartCount, setCartCount, wishlistCount, setWishlistCount } = useStore();
 
-  // ── Scroll shadow ────────────────────────────────────────────────
+  // Scroll shadow
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // ── Fetch Cart Count ────────────────────────────────────────────
+  // Fetch cart
   const fetchCartCount = useCallback(async () => {
-    if (user && user.id) {
+    if (user?.id) {
       try {
-        const response = await api.get(`/Cart/index/${user.id}`);
-        const items = response.data.items || [];
-        setCartCount(items.length);
+        const res = await api.get(`/Cart/index/${user.id}`);
+        setCartCount(res.data.items?.length || 0);
       } catch {
         setCartCount(0);
       }
-    } else {
-      setCartCount(0);
-    }
+    } else setCartCount(0);
   }, [user, setCartCount]);
 
-  // ── Fetch Wishlist Count ────────────────────────────────────────
+  // Fetch wishlist
   const fetchWishlistCount = useCallback(async () => {
-    if (user && user.id) {
+    if (user?.id) {
       try {
-        const response = await api.get(`/Wishlist/index/${user.id}`);
-        const items = response.data || [];
-        setWishlistCount(items.length);
+        const res = await api.get(`/Wishlist/index/${user.id}`);
+        setWishlistCount(res.data?.length || 0);
       } catch {
         setWishlistCount(0);
       }
-    } else {
-      setWishlistCount(0);
-    }
+    } else setWishlistCount(0);
   }, [user, setWishlistCount]);
 
   useEffect(() => {
@@ -59,42 +49,13 @@ const CustomHeader = () => {
     fetchWishlistCount();
   }, [fetchCartCount, fetchWishlistCount]);
 
-  // ── Wishlist update listener ─────────────────────────────────────
-  useEffect(() => {
-    const handleWishlistUpdate = () => fetchWishlistCount();
-    window.addEventListener("wishlistUpdated", handleWishlistUpdate);
-    return () => window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
-  }, [fetchWishlistCount]);
-
-  // ── User update listener ─────────────────────────────────────────
-  useEffect(() => {
-    const handleUserUpdate = () => {
-      const newUser = JSON.parse(localStorage.getItem("user")) || null;
-      setUser(newUser);
-    };
-    window.addEventListener("userUpdated", handleUserUpdate);
-    return () => window.removeEventListener("userUpdated", handleUserUpdate);
-  }, [setUser]);
-
-  // ── Cart update listener ─────────────────────────────────────────
-  useEffect(() => {
-    const handleCartUpdate = () => fetchCartCount();
-    window.addEventListener("cartUpdated", handleCartUpdate);
-    return () => window.removeEventListener("cartUpdated", handleCartUpdate);
-  }, [fetchCartCount]);
-
-  // ── Search with Debouncing ─────────────────────────────────────
-  // Debounced search: waits 300ms after user stops typing
+  // Search
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
 
-    // Clear previous timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
-    // Debounce navigation - wait 300ms after user stops typing
     if (query.trim()) {
       debounceTimerRef.current = setTimeout(() => {
         navigate(`/product?search=${encodeURIComponent(query)}`);
@@ -104,180 +65,143 @@ const CustomHeader = () => {
     }
   };
 
-  // Immediate search when user clicks search button or presses Enter
   const handleSearch = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
-    // Cancel any pending debounce
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Navigate immediately
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     navigate(`/product?search=${encodeURIComponent(searchQuery)}`);
   };
 
-  // ── Voice Search ────────────────────────────────────────────────
-  const startVoiceSearch = () => {
-    if (!("webkitSpeechRecognition" in window)) {
-      alert("Your browser does not support voice search.");
-      return;
-    }
-    recognition = new window.webkitSpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-    recognition.continuous = false;
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onresult = (event) => {
-      const voiceText = event.results[0][0].transcript;
-      setSearchQuery(voiceText);
-
-      // Cancel any pending debounce and navigate immediately
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      navigate(`/product?search=${voiceText}`);
+  // Listeners
+  useEffect(() => {
+    const updateUser = () => {
+      setUser(JSON.parse(localStorage.getItem("user")) || null);
     };
-    recognition.start();
-  };
+    window.addEventListener("userUpdated", updateUser);
+    return () => window.removeEventListener("userUpdated", updateUser);
+  }, [setUser]);
 
-  // Cleanup debounce timer on unmount
-  React.useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, []);
+  useEffect(() => {
+    window.addEventListener("cartUpdated", fetchCartCount);
+    return () => window.removeEventListener("cartUpdated", fetchCartCount);
+  }, [fetchCartCount]);
 
-  const displayName = user?.username || user?.name || "Account";
+  useEffect(() => {
+    window.addEventListener("wishlistUpdated", fetchWishlistCount);
+    return () => window.removeEventListener("wishlistUpdated", fetchWishlistCount);
+  }, [fetchWishlistCount]);
 
   return (
     <header
       className={`sticky top-0 z-[60] bg-white transition-all duration-300 ${
-        scrolled
-          ? "shadow-header"
-          : "border-b border-stone-100"
+        scrolled ? "shadow-header" : "border-b border-stone-100"
       }`}
     >
-      <div className="container-main">
-        <div className="flex items-center gap-2 sm:gap-3 md:gap-5 h-14 sm:h-16">
+    <div className="relative w-full flex items-center h-14 [@media(min-width:990px)]:h-16 gap-4 px-4">
 
-          {/* ── Logo ───────────────────────────────────────────── */}
-          <a
-            href="/"
-            className="flex-shrink-0 flex items-center"
-            aria-label="Kitchenary Kart Home"
-          >
-            <img
-              src={logoimage}
-              alt="Kitchenary Kart"
-              className="h-8 sm:h-10 md:h-12 w-auto object-contain"
-            />
+        {/* LEFT */}
+       <div className="flex items-center gap-3 phone:flex-1 phone:min-w-0">
+
+          {/* Mobile Logo */}
+          <div className="phone:hidden">
+            <img src={logoimage} alt="logo" className="h-7" />
+          </div>
+
+          {/* Desktop Logo */}
+          <a href="/" className="hidden phone:flex items-center phone:flex-shrink-0">
+            <img src={logoimage} className="h-10 md:h-12" />
           </a>
 
-          {/* ── Search Bar ─────────────────────────────────────── */}
-          <form onSubmit={handleSearch} className="flex-1 min-w-0">
-            <div
-              className={`flex items-center h-9 sm:h-10 bg-stone-50 rounded-xl border-2 transition-all duration-200 overflow-hidden ${
-                searchFocused
-                  ? "border-brand shadow-[0_0_0_3px_rgba(185,28,28,0.08)] bg-white"
-                  : "border-stone-200 hover:border-stone-300"
-              }`}
-            >
-              <button
-                type="submit"
-                className="flex-shrink-0 flex items-center justify-center w-8 sm:w-10 h-full text-stone-400 hover:text-brand transition-colors"
-                aria-label="Search"
-              >
-                <Search size={15} />
-              </button>
-
+          {/* Desktop Search */}
+          <form
+            onSubmit={handleSearch}
+            className="hidden phone:flex w-[220px] md:w-[280px] lg:w-[360px]"
+          >
+            <div className="flex items-center border bg-[#f5f5f5] w-full h-10">
               <input
                 type="text"
-                className="flex-1 h-full bg-transparent text-xs sm:text-sm font-body text-charcoal placeholder-stone-400 outline-none border-none min-w-0"
-                placeholder="Search products..."
+                placeholder="What can we help you find?"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
+                className="flex-1 px-3 text-phone bg-transparent outline-none"
               />
-
-              <button
-                type="button"
-                onClick={startVoiceSearch}
-                className={`flex-shrink-0 hidden xs:flex items-center justify-center w-8 sm:w-10 h-full transition-colors ${
-                  isListening ? "text-brand animate-pulse" : "text-stone-400 hover:text-brand"
-                }`}
-                aria-label="Voice search"
-                title="Voice search"
-              >
-                <Mic size={14} />
+              <button className="bg-black text-white px-3 h-full">
+                <Search size={18} />
               </button>
             </div>
           </form>
+        </div>
 
-          {/* ── Right Actions ───────────────────────────────────── */}
-          <div className="flex-shrink-0 flex items-center gap-0.5 sm:gap-1.5">
+        {/* CENTER */}
+        <div className="flex-1 flex justify-center min-w-0 phone:-translate-x-28">
+          <span 
+           onClick={() => navigate("/")}
+           className="text-phone phone:text-xl md:text-2xl font-semibold truncate">
+            KITCHENARY KART
+          </span>
+        </div>
 
-            {/* Account — Desktop */}
-            <button
-              onClick={() => navigate(user ? "/profile" : "/login")}
-              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-charcoal hover:bg-stone-100 transition-colors"
-              aria-label={user ? "My Account" : "Login"}
-            >
-              <User size={18} className="text-stone-500" />
-              <span className="hidden md:block max-w-[90px] truncate text-sm">
-                {user ? displayName : "Login"}
+        {/* RIGHT */}
+        <div className="flex items-center gap-3 phone:gap-5">
+
+          {/* Account */}
+          <button
+            onClick={() => navigate(user ? "/profile" : "/login")}
+            className="flex flex-col items-center"
+          >
+            <User size={18} />
+            <span className="hidden phone:block text-xs">Account</span>
+          </button>
+
+          {/* Wishlist */}
+          <button
+            onClick={() => navigate(user ? "/wishlist" : "/login")}
+            className="relative flex flex-col items-center"
+          >
+            <Heart size={18} />
+            <span className="hidden phone:block text-xs">Favorites</span>
+
+            {wishlistCount > 0 && (
+              <span className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-[9px] min-w-[16px] h-[16px] flex items-center justify-center bg-black text-white rounded-full">
+                {wishlistCount > 9 ? "9+" : wishlistCount}
               </span>
-            </button>
+            )}
+          </button>
 
-            {/* Account — Mobile */}
-            <button
-              onClick={() => navigate(user ? "/profile" : "/login")}
-              className="sm:hidden btn-icon w-8 h-8"
-              aria-label={user ? "My Account" : "Login"}
-            >
-              <User size={18} className="text-stone-500" />
-            </button>
+          {/* Cart */}
+          <button
+            onClick={() => navigate(user ? `/cart/${user.id}` : "/login")}
+            className="relative flex flex-col items-center"
+          >
+            <ShoppingCart size={18} />
+            <span className="hidden phone:block text-xs">Cart</span>
 
-            {/* Wishlist */}
-            <button
-              onClick={() => navigate(user ? "/wishlist" : "/login")}
-              className="relative btn-icon w-8 h-8 sm:w-10 sm:h-10"
-              aria-label={`Wishlist${wishlistCount > 0 ? ` (${wishlistCount})` : ""}`}
-            >
-              <Heart
-                size={18}
-                className={
-                  wishlistCount > 0 ? "text-brand fill-brand" : "text-stone-500"
-                }
-              />
-              {wishlistCount > 0 && (
-                <span className="badge absolute -top-1 -right-1 text-[9px] min-w-[16px] h-[16px]">
-                  {wishlistCount > 9 ? "9+" : wishlistCount}
-                </span>
-              )}
-            </button>
+            {cartCount > 0 && (
+              <span className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-[9px] min-w-[16px] h-[16px] flex items-center justify-center bg-black text-white rounded-full">
+                {cartCount > 9 ? "9+" : cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
 
-            {/* Cart */}
-            <button
-              onClick={() => navigate(user ? `/cart/${user.id}` : "/login")}
-              className="relative flex items-center gap-1 sm:gap-1.5 pl-2.5 sm:pl-3 pr-3 sm:pr-4 py-1.5 sm:py-2 bg-brand text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-brand-700 transition-all duration-200 hover:shadow-button"
-              aria-label={`Cart${cartCount > 0 ? ` (${cartCount})` : ""}`}
-            >
-              <ShoppingCart size={16} />
-              <span className="hidden xs:block">Cart</span>
-              {cartCount > 0 && (
-                <span className="flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-brand text-[9px] font-bold rounded-full">
-                  {cartCount > 9 ? "9+" : cartCount}
-                </span>
-              )}
+      {/* MOBILE SEARCH */}
+      <div className="phone:hidden px-3 pb-2">
+        <form onSubmit={handleSearch}>
+          <div className="flex border bg-[#f5f5f5]">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="flex-1 px-3 py-2 text-phone bg-transparent outline-none"
+            />
+            <button className="bg-black text-white px-3">
+              <Search size={18} />
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </header>
   );
