@@ -644,7 +644,6 @@ const ProductDetails = () => {
     "@type": "Product",
     name: product.name,
     description: product.description || product.name,
-    sku: String(currentVariant.id),
     image: images.map((img) => imgSrc(img)),
     brand: { "@type": "Brand", name: "Kitchenary Kart" },
     offers: {
@@ -853,7 +852,7 @@ const ProductDetails = () => {
                               loading="lazy"
                               src={imgSrc(image)}
                               alt={`Product image ${index + 1}`}
-                              className={`w-full h-full object-cover ${isDesktopZoom ? "cursor-zoom-plus" : "cursor-zoom-in"}`}
+                              className={`w-full h-full object-contain bg-white ${isDesktopZoom ? "cursor-zoom-plus" : "cursor-zoom-in"}`}
                               onError={(e) => {
                                 e.target.onerror = null;
                                 e.target.src = logo;
@@ -1177,10 +1176,6 @@ const ProductDetails = () => {
                     >
                       <Plus size={16} />
                     </button>
-                  </div>
-                  <div className="text-xs text-stone-500">
-                    <span className="font-semibold text-stone-600">SKU:</span>{" "}
-                    {String(currentVariant.id)}
                   </div>
                 </div>
 
