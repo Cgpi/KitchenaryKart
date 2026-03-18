@@ -38,12 +38,12 @@ const HomeNewArrivals = () => {
             </p>
 
             <button
-              onClick={() => window.scrollTo({ top: 500, behavior: "smooth" })}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-lg font-semibold hover:bg-gray-200 transition"
-            >
-              Explore Now
-              <ArrowRight size={14} />
-            </button>
+  onClick={() => navigate("/new-arrivals")}
+  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-lg font-semibold hover:bg-gray-200 transition"
+>
+  Explore Now
+  <ArrowRight size={14} />
+</button>
           </div>
         </div>
       </section>

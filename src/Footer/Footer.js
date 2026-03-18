@@ -13,18 +13,19 @@ import {
 import logo from "../images/piclogo.png";
 
 const globalStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+ @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
-  .kk-footer, .kk-footer * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
-  .kk-serif { font-family: 'Playfair Display', serif; }
-
+  body, * {
+  font-family: 'Roboto', 'Arial', sans-serif;
+}
+ 
   /* ── nav links ─────────────────────────────────────── */
   .kk-nav-link {
     display: flex;
     align-items: center;
     gap: 0px;
     text-align: left;
-    color: #78716c;
+    color: #151312;
     font-size: 0.875rem;
     font-weight: 400;
     text-decoration: none;
@@ -42,11 +43,11 @@ const globalStyles = `
     opacity: 0;
     width: 0;
     overflow: hidden;
-    color: #B91C1C;
+    color: #621515;
     flex-shrink: 0;
     transition: opacity 0.2s ease, width 0.2s ease;
   }
-  .kk-nav-link:hover { color: #B91C1C; }
+  .kk-nav-link:hover { color: #621515; }
   .kk-nav-link:hover .arrow-icon { opacity: 1; width: 14px; }
 
   /* ── trust badge cell ──────────────────────────────── */

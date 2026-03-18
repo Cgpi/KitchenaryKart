@@ -19,6 +19,8 @@ const CategoryHeroBanner = lazy(() => import("./CategoryHeroBanner"));
 const TopCategories = lazy(() => import("./TopCategories"));
 const MostSellingProductList = lazy(() => import("./MostSelling"));
 const NewArrivalProductList = lazy(() => import("./NewArrivals"));
+const HomeNewArrivals = lazy(() => import("./HomeNewArrivals"));
+
 
 // ── Parameterized home category/subcategory slots (5 slots → 2 components) ───
 // CategoryWithSubcategories: slot prop 1–5 → hits /Selected_category{N} API
@@ -139,6 +141,7 @@ const App = () => {
                   <CategoryHeroBanner />
                   <SubcategoryWithSubcategories />
                   <CategoryWithSubcategories slot={2} />
+                  <HomeNewArrivals/>
                   <SubcategoryWithSubcategories slot={2} />
                   <CategoryWithSubcategories slot={3} />
                   <SubcategoryWithSubcategories slot={3} />
