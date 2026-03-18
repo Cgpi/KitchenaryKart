@@ -28,17 +28,34 @@ function gridColsClass(count) {
 }
 
 function Navbar() {
+  const NEW_CACHE_KEY = "new_arrivals_cache";
+
+const getCachedNewArrivals = () => {
+  try {
+    return JSON.parse(localStorage.getItem(NEW_CACHE_KEY)) || [];
+  } catch {
+    return [];
+  }
+};
   const [categories, setCategories] = useState(() => getCachedCategories() || []);
   const [categoriesLoading, setCategoriesLoading] = useState(() => !(getCachedCategories()?.length > 0));
   const [activeCategory, setActiveCategory] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(null);
  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 990);
+const [newProducts, setNewProducts] = useState(() => getCachedNewArrivals());
 
+const [newLoading, setNewLoading] = useState(
+  () => getCachedNewArrivals().length === 0
+);
   const closeTimer = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
+
+const setCachedNewArrivals = (products) => {
+  localStorage.setItem(NEW_CACHE_KEY, JSON.stringify(products));
+};
   // ── Resize listener ──────────────────────────────────────────────
   useEffect(() => {
     const onResize = () => setIsDesktop(window.innerWidth >= 990);
@@ -47,23 +64,67 @@ function Navbar() {
   }, []);
 
   // ── Fetch Categories — show cached immediately, then refresh in background ─
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const res = await api.get(`/category/index`);
-        const cats = processCategories(res.data);
+ // ── Fetch Categories — show cached immediately, then refresh in background ─
+useEffect(() => {
+  async function fetchCategories() {
+    const cached = getCachedCategories() || [];
+    if (cached.length > 0) {
+      setCategories(cached); // show instantly
+      setCategoriesLoading(false);
+    }
+
+    try {
+      const res = await api.get(`/category/index`);
+      const cats = processCategories(res.data);
+
+      // Only update if there is any new category
+      const cachedIds = cached.map((c) => c.id);
+      const hasNew = cats.some((c) => !cachedIds.includes(c.id));
+
+      if (hasNew || cached.length === 0) {
         setCategories(cats);
         setCachedCategories(res.data);
-      } catch {
-        // Keep cached data if fetch fails
-      } finally {
-        setCategoriesLoading(false);
       }
+    } catch (e) {
+      console.error("Failed to fetch categories", e);
+      // keep cached if fetch fails
+    } finally {
+      setCategoriesLoading(false);
     }
-    fetchCategories();
-  }, []);
+  }
 
-  // ── Close on route change ────────────────────────────────────────
+  fetchCategories();
+}, []);
+useEffect(() => {
+  if (activeCategory !== "new") return;
+
+  let ignore = false;
+
+  async function fetchNewArrivals() {
+    try {
+      setNewLoading(true); // ✅ show skeleton ONLY if needed
+
+      const res = await api.get("/product/new_arrivals");
+
+      if (!ignore && res.data) {
+        setNewProducts(res.data);
+        setCachedNewArrivals(res.data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch new arrivals", e);
+    } finally {
+      if (!ignore) setNewLoading(false);
+    }
+  }
+
+  fetchNewArrivals();
+
+  return () => {
+    ignore = true;
+  };
+}, [activeCategory]);
+
+// ── Close on route change ────────────────────────────────────────
   useEffect(() => {
     setMobileOpen(false);
     setMobileExpanded(null);
@@ -119,7 +180,10 @@ function Navbar() {
   }, []);
 
   const activeData = categories.find((c) => c.id === activeCategory) || null;
-  const megaColumns = activeData ? splitColumns(activeData.subcategories) : [];
+ const megaColumns =
+  activeCategory === "new" || !activeData
+    ? []
+    : splitColumns(activeData.subcategories || []);
 
   return (
     <>
@@ -133,16 +197,34 @@ function Navbar() {
       >
         {/* ── Tab Bar — full viewport width, items share space equally ── */}
 {/* ── Tab Bar — full width, items shrink to fit ── */}
-<ul
-  className="flex items-center h-12 m-0 p-0 w-full"
+
+  <ul className="flex items-center h-12 m-0 p-0 w-full overflow-x-auto whitespace-nowrap scrollbar-hide"
   role="menubar"
   aria-label="Product categories"
 >
+  <li
+  className="flex-shrink-0 list-none h-full"
+  onMouseEnter={() => openMenu("new")}
+  onMouseLeave={scheduleClose}
+>
+  <button
+    // onClick={() => {
+    //   setActiveCategory(null);
+    //   navigate("/new-arrivals");
+    // }}
+    className={`relative flex items-center justify-center gap-1 h-12 px-3 text-[11px] font-bold uppercase
+    tracking-wide transition-all duration-150
+    after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
+    ${activeCategory === "new" ? "after:w-full text-black" : "text-black/90 hover:text-black hover:after:w-full"}`}
+  >
+    NEW
+  </button>
+</li>
   {categories.length > 0
     ? categories.map((cat) => (
         <li
           key={cat.id}
-          className="flex-shrink list-none h-full"
+          className="flex-shrink-0 list-none h-full"
           role="none"
           onMouseEnter={() => openMenu(cat.id)}
           onMouseLeave={scheduleClose}
@@ -187,73 +269,146 @@ function Navbar() {
             overflow-x-auto container. Positioned absolute relative
             to the sticky <nav>, spans full nav width.
         ════════════════════════════════════════════════════════════ */}
-        {activeData && (
-          <nav
-            onMouseEnter={cancelClose}
-            onMouseLeave={scheduleClose}
-            aria-label={`${activeData.name} — subcategories`}
-            className="absolute top-full left-0 right-0 bg-white z-[9999] flex flex-col"
-            style={{
-              height: "360px",          /* fixed constant height */
-              // borderTop: "3px solid #B91C1C",
-              boxShadow: "0 32px 80px rgba(0,0,0,0.13), 0 8px 24px rgba(0,0,0,0.08)",
-              animation: "slideDown 0.18s cubic-bezier(0.16,1,0.3,1) forwards",
-            }}
-          >
-            {/* ── Mega content — fills the fixed height ────────── */}
-            <div className="container-main flex-1 flex gap-0 min-h-0 py-6">
+       {(activeData || activeCategory === "new") && (
+  <nav
+    onMouseEnter={cancelClose}
+    onMouseLeave={scheduleClose}
+    aria-label={
+      activeCategory === "new"
+        ? "New arrivals"
+        : `${activeData?.name} — subcategories`
+    }
+    className="absolute top-full left-0 right-0 bg-white z-[9999] flex flex-col"
+    style={{
+      height: "360px",
+      boxShadow: "0 32px 80px rgba(0,0,0,0.13), 0 8px 24px rgba(0,0,0,0.08)",
+      animation: "slideDown 0.18s cubic-bezier(0.16,1,0.3,1) forwards",
+    }}
+  >
+    {activeCategory === "new" ? (
+      // ✅ NEW TAB UI
+      <div className="container-main h-full flex items-start gap-6 py-6">
+        {/* LEFT BANNER */}
+        <div className="w-56 h-47  overflow-hidden relative">
+          <img
+            src={newProducts?.[0]?.variants?.[0]?.images?.[0] || logo}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute bottom-4 left-4 text-white">
+          
+            <h2 className="text-xs opacity-80">Latest collections</h2>
+          </div>
+        </div>
 
-              {/* LEFT PANEL — category hero (fixed, no scroll) ── */}
-              <div className="w-48 flex-shrink-0 pr-6 border-r border-stone-100 flex flex-col justify-between">
-                <div>
-                  <button
-                    onClick={() => {
-                      setActiveCategory(null);
-                      navigate(`/category/${activeData.id}/subcategories`);
-                    }}
-                    className="block w-full text-left group/img mb-3"
-                  >
-                    <div className="w-full h-28 rounded-xl overflow-hidden bg-cream-200 relative">
-                      <img
-                        src={activeData.image || logo}
-                        alt={activeData.name}
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = logo;
-                        }}
-                        className="w-full h-full object-contain p-4
-                                   group-hover/img:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-brand/0 group-hover/img:bg-brand/5
-                                      transition-colors duration-300 rounded-xl" />
-                    </div>
-                    <h2 className="font-display font-bold text-charcoal text-base leading-snug mt-3
-                                   group-hover/img:text-brand transition-colors duration-150">
-                      {activeData.name}
-                    </h2>
-                  </button>
-
-                  <p className="text-stone-400 text-[11px] font-body mb-0">
-                    {activeData.subcategories?.length || 0} categories
-                  </p>
-                </div>
-
-                {/* Shop All CTA pinned to bottom */}
+        {/* RIGHT LINKS */}
+        <div className="flex-1 grid grid-cols-2 gap-6">
+           {/* Shop By Category */}
+          <div>
+            <h3 className="text-sm font-bold mb-3">Shop By Category</h3>
+            <ul className="space-y-2 text-[13px]">
+              {categories.length > 0 ? (
+                categories.map((cat) => (
+                  <li key={cat.id}>
+                    <button
+                      onClick={() =>
+                        navigate(`/category/${cat.id}/subcategories`)
+                      }
+                      className="text-left hover:text-black/80 font-medium"
+                    >
+                      {cat.name}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="text-gray-400 text-xs">Loading categories...</li>
+              )}
+            </ul>
+          </div>
+          {/* Featured */}
+          <div>
+            <h3 className="text-sm font-bold mb-3">Featured</h3>
+            <ul className="space-y-2 text-[13px]">
+              <li>
                 <button
-                  onClick={() => {
-                    setActiveCategory(null);
-                    navigate(`/category/${activeData.id}/subcategories`);
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-[11px] font-bold
-                             text-brand border-2 border-brand/25 rounded-xl
-                             hover:bg-brand hover:text-white hover:border-brand
-                             transition-all duration-200 group/btn w-full justify-center"
+                  onClick={() => navigate("/new-arrivals")}
+                  className="text-left hover:text-black/80 font-medium"
                 >
-                  Shop All
-                  <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
+                  Latest Drops
                 </button>
-              </div>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigate("/most-selling-all")}
+                  className="text-left hover:text-black/80 font-medium"
+                >
+                  Best Sellers
+                </button>
+              </li>
+            </ul>
+          </div>
+
+         
+        </div>
+      </div>
+    ) : (
+
+  // ✅ YOUR EXISTING MEGA MENU (PASTE EVERYTHING BELOW AS IT IS)
+  <div className="container-main flex-1 flex gap-0 min-h-0 py-6">
+
+              <div className="w-64 flex-shrink-0 pr-6 border-r border-stone-100 flex flex-col justify-between">
+  <div>
+    <button
+      onClick={() => {
+        setActiveCategory(null);
+        navigate(`/category/${activeData.id}/subcategories`);
+      }}
+      className="block w-full text-left group/img mb-4"
+    >
+      {/* IMAGE CARD */}
+      <div className="w-full h-56 overflow-hidden relative">
+        <img
+          src={activeData.image || logo}
+          alt={activeData.name}
+          loading="lazy"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = logo;
+          }}
+          className="w-full h-full object-cover
+                     group-hover/img:scale-110 transition-transform duration-500"
+        />
+
+        {/* GRADIENT OVERLAY */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+
+        {/* TEXT ON IMAGE */}
+        <div className="absolute bottom-3 left-3 right-3">
+          {/* <h2 className="text-white text-lg font-bold leading-tight">
+            {activeData.name}
+          </h2> */}
+          <p className="text-white/80 text-xs mt-1">
+            {activeData.subcategories?.length || 0} categories
+          </p>
+        </div>
+      </div>
+    </button>
+  </div>
+
+  {/* SHOP ALL BUTTON */}
+  <button
+    onClick={() => {
+      setActiveCategory(null);
+      navigate(`/category/${activeData.id}/subcategories`);
+    }}
+    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold
+               text-white bg-black rounded-xl
+               hover:bg-gray-800 transition-all duration-200 w-full justify-center"
+  >
+    Shop All
+    <ArrowRight size={14} />
+  </button>
+</div>
 
               {/* RIGHT PANEL — scrollable subcategory list ──────── */}
               <div className="flex-1 pl-6 min-w-0 flex flex-col min-h-0">
@@ -286,7 +441,7 @@ function Navbar() {
                                 }
                                 className="w-full text-left flex items-center justify-between
                                            py-[6px] px-2.5 rounded-lg text-[12.5px] font-medium
-                                           text-stone-700 hover:text-brand hover:bg-red-50
+                                           text-stone-700 hover:text-brand hover:bg-gray-100
                                            transition-all duration-100 group/sub"
                               >
                                 <span className="truncate leading-snug pr-1">{sub.name}</span>
@@ -316,28 +471,32 @@ function Navbar() {
                   )}
                 </div>
               </div>
-            </div>
-
+                       </div>
+)}
             {/* ── Bottom strip — always visible at fixed bottom ─── */}
-            <div className="flex-shrink-0 border-t border-stone-100 bg-stone-50/70 py-2">
-              <div className="container-main flex items-center justify-between">
-                <p className="text-[11px] text-stone-400 font-body">
-                  {activeData.subcategories?.length || 0} subcategories in{" "}
-                  <span className="font-semibold text-stone-500">{activeData.name}</span>
-                </p>
-                <button
-                  onClick={() => {
-                    setActiveCategory(null);
-                    navigate(`/category/${activeData.id}/subcategories`);
-                  }}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-brand
-                             hover:underline hover:underline-offset-2 transition-all"
-                >
-                  View all {activeData.name}
-                  <ArrowRight size={10} />
-                </button>
-              </div>
-            </div>
+          {activeCategory !== "new" && activeData && (
+  <div className="flex-shrink-0 border-t border-stone-100 bg-stone-50/70 py-2">
+    <div className="container-main flex items-center justify-between">
+      <p className="text-[11px] text-stone-400 font-body">
+        {activeData.subcategories?.length || 0} subcategories in{" "}
+        <span className="font-semibold text-stone-500">
+          {activeData.name}
+        </span>
+      </p>
+      <button
+        onClick={() => {
+          setActiveCategory(null);
+          navigate(`/category/${activeData.id}/subcategories`);
+        }}
+        className="inline-flex items-center gap-1 text-[11px] font-bold text-brand
+                   hover:underline hover:underline-offset-2 transition-all"
+      >
+        View all {activeData.name}
+        <ArrowRight size={10} />
+      </button>
+    </div>
+  </div>
+)}
           </nav>
         )}
       </nav>
@@ -403,7 +562,7 @@ function Navbar() {
             <div className="flex items-center justify-between px-5 py-4 bg-brand
                             border-b border-white/20 flex-shrink-0">
               <span className="text-white font-display font-bold text-lg">
-                Browse Categories
+               Kitchenary Kart
               </span>
               <button
                 onClick={() => setMobileOpen(false)}
@@ -458,7 +617,7 @@ function Navbar() {
                             }}
                             className="w-full flex items-center gap-2 pl-8 pr-5 py-2.5 text-left
                                        text-xs font-bold text-brand border-b border-stone-100
-                                       hover:bg-red-50 transition-colors"
+                                       hover:bg-gray-100 transition-colors"
                           >
                             <ArrowRight size={11} />
                             Shop All {cat.name}
@@ -475,7 +634,7 @@ function Navbar() {
                               }
                               className="w-full flex items-center justify-between
                                          pl-8 pr-5 py-3 text-left text-sm text-stone-600
-                                         hover:text-brand hover:bg-red-50 transition-colors
+                                         hover:text-brand hover:bg-gray-100 transition-colors
                                          border-b border-stone-100 last:border-0"
                             >
                               <span>{sub.name}</span>
