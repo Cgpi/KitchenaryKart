@@ -28,17 +28,34 @@ function gridColsClass(count) {
 }
 
 function Navbar() {
+  const NEW_CACHE_KEY = "new_arrivals_cache";
+
+const getCachedNewArrivals = () => {
+  try {
+    return JSON.parse(localStorage.getItem(NEW_CACHE_KEY)) || [];
+  } catch {
+    return [];
+  }
+};
   const [categories, setCategories] = useState(() => getCachedCategories() || []);
   const [categoriesLoading, setCategoriesLoading] = useState(() => !(getCachedCategories()?.length > 0));
   const [activeCategory, setActiveCategory] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(null);
  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 990);
+const [newProducts, setNewProducts] = useState(() => getCachedNewArrivals());
 
+const [newLoading, setNewLoading] = useState(
+  () => getCachedNewArrivals().length === 0
+);
   const closeTimer = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
+
+const setCachedNewArrivals = (products) => {
+  localStorage.setItem(NEW_CACHE_KEY, JSON.stringify(products));
+};
   // ── Resize listener ──────────────────────────────────────────────
   useEffect(() => {
     const onResize = () => setIsDesktop(window.innerWidth >= 990);
@@ -62,8 +79,36 @@ function Navbar() {
     }
     fetchCategories();
   }, []);
+useEffect(() => {
+  if (activeCategory !== "new") return;
 
-  // ── Close on route change ────────────────────────────────────────
+  let ignore = false;
+
+  async function fetchNewArrivals() {
+    try {
+      setNewLoading(true); // ✅ show skeleton ONLY if needed
+
+      const res = await api.get("/product/new_arrivals");
+
+      if (!ignore && res.data) {
+        setNewProducts(res.data);
+        setCachedNewArrivals(res.data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch new arrivals", e);
+    } finally {
+      if (!ignore) setNewLoading(false);
+    }
+  }
+
+  fetchNewArrivals();
+
+  return () => {
+    ignore = true;
+  };
+}, [activeCategory]);
+
+// ── Close on route change ────────────────────────────────────────
   useEffect(() => {
     setMobileOpen(false);
     setMobileExpanded(null);
@@ -119,7 +164,10 @@ function Navbar() {
   }, []);
 
   const activeData = categories.find((c) => c.id === activeCategory) || null;
-  const megaColumns = activeData ? splitColumns(activeData.subcategories) : [];
+ const megaColumns =
+  activeCategory === "new" || !activeData
+    ? []
+    : splitColumns(activeData.subcategories || []);
 
   return (
     <>
@@ -133,16 +181,34 @@ function Navbar() {
       >
         {/* ── Tab Bar — full viewport width, items share space equally ── */}
 {/* ── Tab Bar — full width, items shrink to fit ── */}
-<ul
-  className="flex items-center h-12 m-0 p-0 w-full"
+
+  <ul className="flex items-center h-12 m-0 p-0 w-full overflow-x-auto whitespace-nowrap scrollbar-hide"
   role="menubar"
   aria-label="Product categories"
 >
+  <li
+  className="flex-shrink-0 list-none h-full"
+  onMouseEnter={() => openMenu("new")}
+  onMouseLeave={scheduleClose}
+>
+  <button
+    onClick={() => {
+      setActiveCategory(null);
+      navigate("/new-arrivals");
+    }}
+    className={`relative flex items-center justify-center gap-1 h-12 px-3 text-[11px] font-bold uppercase
+    tracking-wide transition-all duration-150
+    after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
+    ${activeCategory === "new" ? "after:w-full text-black" : "text-black/90 hover:text-black hover:after:w-full"}`}
+  >
+    NEW
+  </button>
+</li>
   {categories.length > 0
     ? categories.map((cat) => (
         <li
           key={cat.id}
-          className="flex-shrink list-none h-full"
+          className="flex-shrink-0 list-none h-full"
           role="none"
           onMouseEnter={() => openMenu(cat.id)}
           onMouseLeave={scheduleClose}
@@ -187,11 +253,15 @@ function Navbar() {
             overflow-x-auto container. Positioned absolute relative
             to the sticky <nav>, spans full nav width.
         ════════════════════════════════════════════════════════════ */}
-        {activeData && (
+       {(activeData || activeCategory === "new") && (
           <nav
             onMouseEnter={cancelClose}
             onMouseLeave={scheduleClose}
-            aria-label={`${activeData.name} — subcategories`}
+           aria-label={
+  activeCategory === "new"
+    ? "New arrivals"
+    : `${activeData?.name} — subcategories`
+}
             className="absolute top-full left-0 right-0 bg-white z-[9999] flex flex-col"
             style={{
               height: "360px",          /* fixed constant height */
@@ -201,59 +271,151 @@ function Navbar() {
             }}
           >
             {/* ── Mega content — fills the fixed height ────────── */}
-            <div className="container-main flex-1 flex gap-0 min-h-0 py-6">
+           {activeCategory === "new" ? (
 
-              {/* LEFT PANEL — category hero (fixed, no scroll) ── */}
-              <div className="w-48 flex-shrink-0 pr-6 border-r border-stone-100 flex flex-col justify-between">
-                <div>
-                  <button
-                    onClick={() => {
-                      setActiveCategory(null);
-                      navigate(`/category/${activeData.id}/subcategories`);
-                    }}
-                    className="block w-full text-left group/img mb-3"
-                  >
-                    <div className="w-full h-28 rounded-xl overflow-hidden bg-cream-200 relative">
-                      <img
-                        src={activeData.image || logo}
-                        alt={activeData.name}
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = logo;
-                        }}
-                        className="w-full h-full object-contain p-4
-                                   group-hover/img:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-brand/0 group-hover/img:bg-brand/5
-                                      transition-colors duration-300 rounded-xl" />
-                    </div>
-                    <h2 className="font-display font-bold text-charcoal text-base leading-snug mt-3
-                                   group-hover/img:text-brand transition-colors duration-150">
-                      {activeData.name}
-                    </h2>
-                  </button>
+  // ✅ NEW TAB UI
+  <div className="container-main h-full flex items-center gap-6 py-6">
 
-                  <p className="text-stone-400 text-[11px] font-body mb-0">
-                    {activeData.subcategories?.length || 0} categories
-                  </p>
-                </div>
+    {/* LEFT BANNER */}
+    <div className="w-72 h-full rounded-2xl overflow-hidden relative">
+     <img
+  src={
+    newProducts?.[0]?.variants?.[0]?.images?.[0] || logo
+  }
+  className="w-full h-full object-cover"
+/>
+      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute bottom-4 left-4 text-white">
+        <h2 className="text-xl font-bold">New Arrivals</h2>
+        <p className="text-xs opacity-80">Latest collections</p>
+      </div>
+    </div>
 
-                {/* Shop All CTA pinned to bottom */}
-                <button
-                  onClick={() => {
-                    setActiveCategory(null);
-                    navigate(`/category/${activeData.id}/subcategories`);
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-[11px] font-bold
-                             text-brand border-2 border-brand/25 rounded-xl
-                             hover:bg-brand hover:text-white hover:border-brand
-                             transition-all duration-200 group/btn w-full justify-center"
-                >
-                  Shop All
-                  <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
-                </button>
-              </div>
+    {/* RIGHT PRODUCTS */}
+    
+    <div className="flex-1 flex items-center justify-center">
+
+ {newLoading && newProducts.length === 0 ? (
+  // ✅ SKELETON (only first time)
+  <div className="grid grid-cols-4 gap-8">
+    {[1, 2, 3, 4].map((i) => (
+      <div key={i} className="w-32 text-center animate-pulse">
+        <div className="h-28 w-28 mx-auto bg-gray-200 rounded-xl" />
+        <div className="h-3 bg-gray-200 mt-2 rounded w-20 mx-auto" />
+      </div>
+    ))}
+  </div>
+) : newProducts.length > 0 ? (
+  // ✅ REAL DATA (cache OR fresh)
+  <div className="flex flex-col items-center">
+    <div className="grid grid-cols-4 gap-8">
+      {newProducts.slice(0, 4).map((product) => {
+        const variant = product.variants?.[0];
+        const image =
+          variant?.images?.[0]?.startsWith("https")
+            ? variant.images[0]
+            : variant?.images?.[0] || logo;
+
+        return (
+          <div
+            key={product.id}
+            onClick={() => {
+              setActiveCategory(null);
+              navigate(`/product/${product.id}`);
+            }}
+            className="w-32 cursor-pointer group text-center"
+          >
+            <div className="h-28 w-28 mx-auto bg-white-100 rounded-xl border flex items-center justify-center overflow-hidden">
+              <img
+                src={image}
+                className="max-h-full max-w-full object-contain p-2 group-hover:scale-105 transition"
+              />
+            </div>
+
+            <p className="text-xs mt-2 line-clamp-2 text-gray-700">
+              {product.name}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+
+    <button
+      onClick={() => {
+        setActiveCategory(null);
+        navigate("/new-arrivals");
+      }}
+      className="mt-6 px-5 py-2 text-xs font-bold bg-black text-white rounded-full"
+    >
+      Show More →
+    </button>
+  </div>
+) : (
+  <p className="text-sm text-gray-400">No products</p>
+)}
+
+</div>
+</div>
+ 
+
+) : (
+
+  // ✅ YOUR EXISTING MEGA MENU (PASTE EVERYTHING BELOW AS IT IS)
+  <div className="container-main flex-1 flex gap-0 min-h-0 py-6">
+
+              <div className="w-64 flex-shrink-0 pr-6 border-r border-stone-100 flex flex-col justify-between">
+  <div>
+    <button
+      onClick={() => {
+        setActiveCategory(null);
+        navigate(`/category/${activeData.id}/subcategories`);
+      }}
+      className="block w-full text-left group/img mb-4"
+    >
+      {/* IMAGE CARD */}
+      <div className="w-full h-56 rounded-2xl overflow-hidden relative">
+        <img
+          src={activeData.image || logo}
+          alt={activeData.name}
+          loading="lazy"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = logo;
+          }}
+          className="w-full h-full object-cover
+                     group-hover/img:scale-110 transition-transform duration-500"
+        />
+
+        {/* GRADIENT OVERLAY */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+
+        {/* TEXT ON IMAGE */}
+        <div className="absolute bottom-3 left-3 right-3">
+          <h2 className="text-white text-lg font-bold leading-tight">
+            {activeData.name}
+          </h2>
+          <p className="text-white/80 text-xs mt-1">
+            {activeData.subcategories?.length || 0} categories
+          </p>
+        </div>
+      </div>
+    </button>
+  </div>
+
+  {/* SHOP ALL BUTTON */}
+  <button
+    onClick={() => {
+      setActiveCategory(null);
+      navigate(`/category/${activeData.id}/subcategories`);
+    }}
+    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold
+               text-white bg-black rounded-xl
+               hover:bg-gray-800 transition-all duration-200 w-full justify-center"
+  >
+    Shop All
+    <ArrowRight size={14} />
+  </button>
+</div>
 
               {/* RIGHT PANEL — scrollable subcategory list ──────── */}
               <div className="flex-1 pl-6 min-w-0 flex flex-col min-h-0">
@@ -286,7 +448,7 @@ function Navbar() {
                                 }
                                 className="w-full text-left flex items-center justify-between
                                            py-[6px] px-2.5 rounded-lg text-[12.5px] font-medium
-                                           text-stone-700 hover:text-brand hover:bg-red-50
+                                           text-stone-700 hover:text-brand hover:bg-gray-100
                                            transition-all duration-100 group/sub"
                               >
                                 <span className="truncate leading-snug pr-1">{sub.name}</span>
@@ -316,28 +478,32 @@ function Navbar() {
                   )}
                 </div>
               </div>
-            </div>
-
+                       </div>
+)}
             {/* ── Bottom strip — always visible at fixed bottom ─── */}
-            <div className="flex-shrink-0 border-t border-stone-100 bg-stone-50/70 py-2">
-              <div className="container-main flex items-center justify-between">
-                <p className="text-[11px] text-stone-400 font-body">
-                  {activeData.subcategories?.length || 0} subcategories in{" "}
-                  <span className="font-semibold text-stone-500">{activeData.name}</span>
-                </p>
-                <button
-                  onClick={() => {
-                    setActiveCategory(null);
-                    navigate(`/category/${activeData.id}/subcategories`);
-                  }}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-brand
-                             hover:underline hover:underline-offset-2 transition-all"
-                >
-                  View all {activeData.name}
-                  <ArrowRight size={10} />
-                </button>
-              </div>
-            </div>
+          {activeCategory !== "new" && activeData && (
+  <div className="flex-shrink-0 border-t border-stone-100 bg-stone-50/70 py-2">
+    <div className="container-main flex items-center justify-between">
+      <p className="text-[11px] text-stone-400 font-body">
+        {activeData.subcategories?.length || 0} subcategories in{" "}
+        <span className="font-semibold text-stone-500">
+          {activeData.name}
+        </span>
+      </p>
+      <button
+        onClick={() => {
+          setActiveCategory(null);
+          navigate(`/category/${activeData.id}/subcategories`);
+        }}
+        className="inline-flex items-center gap-1 text-[11px] font-bold text-brand
+                   hover:underline hover:underline-offset-2 transition-all"
+      >
+        View all {activeData.name}
+        <ArrowRight size={10} />
+      </button>
+    </div>
+  </div>
+)}
           </nav>
         )}
       </nav>
@@ -458,7 +624,7 @@ function Navbar() {
                             }}
                             className="w-full flex items-center gap-2 pl-8 pr-5 py-2.5 text-left
                                        text-xs font-bold text-brand border-b border-stone-100
-                                       hover:bg-red-50 transition-colors"
+                                       hover:bg-gray-100 transition-colors"
                           >
                             <ArrowRight size={11} />
                             Shop All {cat.name}
@@ -475,7 +641,7 @@ function Navbar() {
                               }
                               className="w-full flex items-center justify-between
                                          pl-8 pr-5 py-3 text-left text-sm text-stone-600
-                                         hover:text-brand hover:bg-red-50 transition-colors
+                                         hover:text-brand hover:bg-gray-100 transition-colors
                                          border-b border-stone-100 last:border-0"
                             >
                               <span>{sub.name}</span>
