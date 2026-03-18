@@ -644,6 +644,7 @@ const ProductDetails = () => {
     "@type": "Product",
     name: product.name,
     description: product.description || product.name,
+    sku: String(currentVariant.id),
     image: images.map((img) => imgSrc(img)),
     brand: { "@type": "Brand", name: "Kitchenary Kart" },
     offers: {
@@ -852,7 +853,7 @@ const ProductDetails = () => {
                               loading="lazy"
                               src={imgSrc(image)}
                               alt={`Product image ${index + 1}`}
-                              className={`w-full h-full object-contain bg-white ${isDesktopZoom ? "cursor-zoom-plus" : "cursor-zoom-in"}`}
+                              className={`w-full h-full bg-white object-contain ${isDesktopZoom ? "cursor-zoom-plus" : "cursor-zoom-in"}`}
                               onError={(e) => {
                                 e.target.onerror = null;
                                 e.target.src = logo;
@@ -938,11 +939,15 @@ const ProductDetails = () => {
               {/* Zoom preview overlay (desktop only) */}
               {isDesktopZoom && currentIndex < images.length && isZoomed && (
                 <div
-                  className="hidden lg:block absolute inset-0 z-50 bg-white border border-stone-200 pointer-events-none"
+                  className="hidden lg:block fixed z-40 pointer-events-none"
                   style={{
+                    top: "120px", // 👈 adjust based on header height
+                    right: "0px",
+                    width: "30%", // 👈 same as image section width
+                    height: "80vh", // 👈 visible area only
                     backgroundImage: `url(${imgSrc(images[currentIndex])})`,
                     backgroundRepeat: "no-repeat",
-                    backgroundSize: "250%",
+                    backgroundSize: "150%",
                     backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
                   }}
                 />
@@ -1176,6 +1181,10 @@ const ProductDetails = () => {
                     >
                       <Plus size={16} />
                     </button>
+                  </div>
+                  <div className="text-xs text-stone-500">
+                    <span className="font-semibold text-stone-600">SKU:</span>{" "}
+                    {String(currentVariant.id)}
                   </div>
                 </div>
 
