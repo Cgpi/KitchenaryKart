@@ -733,15 +733,15 @@ const ProductDetails = () => {
         </div>
 
         {/* ── Layout like reference: gallery left, sticky panel right ── */}
-        <div className="w-full max-w-none px-2 min-[360px]:px-3 sm:px-4 lg:px-0 py-4 sm:py-5 lg:py-6 lg:h-[calc(100vh-108px)] lg:overflow-y-hidden lg:overflow-x-visible bg-white">
-          <div className="flex flex-col lg:flex-row gap-4 min-[360px]:gap-6 lg:gap-10 items-start lg:h-full">
+        <div className="w-full max-w-none px-2 min-[360px]:px-3 sm:px-4 lg:px-0 py-4 sm:py-5 lg:py-6 h-full max-h-[100vh] overflow-y-auto lg:overflow-x-visible bg-white">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-10 items-start w-full h-full">
             {/* ═══ LEFT — Image Gallery ═══ */}
-            <div className="flex-1 min-w-0">
+            <div className="w-full lg:flex-1 min-w-0">
               {/* Thumbnail + Main image row */}
-              <div className="flex gap-5">
+              <div className="flex flex-col lg:flex-row gap-3 lg:gap-5">
                 {/* Vertical thumbnail strip (desktop) */}
                 {totalSlides > 1 && (
-                  <div className="hidden lg:flex flex-col gap-3 flex-shrink-0 overflow-y-auto scrollbar-hide max-h-[560px] pr-1 bg-[#f3f4f6] rounded-md p-2">
+                  <div className="hidden lg:flex flex-col gap-3 flex-shrink-0 overflow-y-auto scrollbar-hide max-h-[70vh] pr-1 bg-[#f3f4f6] rounded-md p-2">
                     {images.map((image, index) => (
                       <button
                         key={index}
@@ -828,7 +828,13 @@ const ProductDetails = () => {
 
                     {/* Images */}
                     <div className="relative overflow-visible">
-                      <div className="h-[clamp(320px,60vh,640px)] lg:h-[clamp(520px,calc(100vh-220px),820px)] relative overflow-hidden">
+                      <div
+                        className="
+      w-full
+      h-[320px] sm:h-[400px]
+      lg:h-[70vh] lg:max-h-[700px]
+      relative overflow-hidden"
+                      >
                         {images.map((image, index) => (
                           <div
                             key={index}
@@ -853,7 +859,7 @@ const ProductDetails = () => {
                               loading="lazy"
                               src={imgSrc(image)}
                               alt={`Product image ${index + 1}`}
-                              className={`w-full h-full bg-white object-contain ${isDesktopZoom ? "cursor-zoom-plus" : "cursor-zoom-in"}`}
+                              className={`max-w-full max-h-full object-contain bg-white block mx-auto ${isDesktopZoom ? "cursor-zoom-plus" : "cursor-zoom-in"}`}
                               onError={(e) => {
                                 e.target.onerror = null;
                                 e.target.src = logo;
@@ -893,7 +899,7 @@ const ProductDetails = () => {
 
                   {/* Mobile thumbnail strip */}
                   {totalSlides > 1 && (
-                    <div className="flex lg:hidden gap-2 mt-3 overflow-x-auto scrollbar-hide pb-1">
+                    <div className="flex lg:hidden gap-2 mt-3 overflow-x-auto pb-2">
                       {images.map((image, index) => (
                         <button
                           key={index}
@@ -908,7 +914,7 @@ const ProductDetails = () => {
                             loading="lazy"
                             src={imgSrc(image)}
                             alt={`Thumb ${index + 1}`}
-                            className="w-full h-full object-contain p-1"
+                            className="w-full h-full object-cover p-1"
                             onError={(e) => {
                               e.target.onerror = null;
                               e.target.src = logo;
@@ -935,7 +941,7 @@ const ProductDetails = () => {
             </div>
 
             {/* ═══ RIGHT — Sticky purchase/info panel ═══ */}
-            <div className="w-full lg:w-[420px] xl:w-[440px] flex-shrink-0 bg-white lg:h-full lg:overflow-y-auto scrollbar-hide px-3 min-[360px]:px-4 sm:px-6 py-4 min-[360px]:py-5 sm:py-6 relative">
+            <div className="w-full lg:w-[420px] xl:w-[440px] flex-shrink-0 bg-white h-auto lg:h-[calc(100vh-120px)] overflow-visible lg:overflow-y-auto lg:scrollbar-hide relative">
               {/* Zoom preview overlay (desktop only) */}
               {isDesktopZoom && currentIndex < images.length && isZoomed && (
                 <div
@@ -1041,7 +1047,7 @@ const ProductDetails = () => {
                           loading="lazy"
                           src={imgSrc(image)}
                           alt={`Color ${color}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                           onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = logo;
@@ -1288,7 +1294,7 @@ const ProductDetails = () => {
               {/* ── Tabs Section — inside right column ───────── */}
               <div className="mt-8">
                 {/* Tab nav */}
-                <div className="flex items-center gap-0 border-b border-stone-200 mb-4 sm:mb-6 overflow-x-auto scrollbar-hide -mx-3 min-[360px]:-mx-4 sm:-mx-6 px-3 min-[360px]:px-4 sm:px-6">
+                <div className="flex items-center gap-0 border-b border-stone-200 mb-4 sm:mb-6 overflow-x-auto scrollbar-hide-mx-3 min-[360px]:-mx-4 sm:-mx-6 px-3 min-[360px]:px-4 sm:px-6">
                   {[
                     { id: "description", label: "Description" },
                     {
@@ -1836,17 +1842,17 @@ const ProductDetails = () => {
       {/* ── Image zoom modal ─────────────────────────────── */}
       {showModal && (
         <div
-          className="fixed inset-0 z-[500] bg-black/85 flex items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-[500] bg-black flex items-center justify-center sm:p-4"
           onClick={handleCloseModal}
         >
           <div
-            className="relative w-full max-w-none sm:max-w-[1320px] h-[100vh] sm:h-[88vh] bg-black/0"
+            className="relative w-full h-full sm:max-w-[1320px] sm:h-[88vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile close */}
             <button
               onClick={handleCloseModal}
-              className="sm:hidden absolute top-2 right-2 z-30 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+              className="sm:hidden absolute top-3 right-3 z-30 w-9 h-9 rounded-full bg-black/50 text-white flex items-center justify-center"
               aria-label="Close modal"
             >
               <X size={18} />
@@ -1948,7 +1954,7 @@ const ProductDetails = () => {
                   </>
                 )}
 
-                <div className="w-full h-full overflow-hidden bg-white flex items-center justify-center">
+                <div className="w-full h-full overflow-hidden bg-black flex items-center justify-center">
                   <img
                     loading="lazy"
                     src={imgSrc(selectedImagePreview || images?.[modalIndex])}
@@ -1958,17 +1964,38 @@ const ProductDetails = () => {
                       transition: "transform 0.2s ease",
                       transformOrigin: "center",
                     }}
-                    className="w-full h-full object-contain select-none"
+                    className="w-full h-full object-contain sm:object-contain"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = logo;
                     }}
                   />
                 </div>
+
+                <div className="sm:hidden absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur px-2 py-2 flex gap-2 overflow-x-auto">
+                  {(images || []).map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setModalIndex(i);
+                        setSelectedImagePreview(img);
+                        setZoomLevel(1);
+                      }}
+                      className={`min-w-[60px] h-[60px] rounded-md overflow-hidden border ${
+                        modalIndex === i ? "border-white" : "border-white/40"
+                      }`}
+                    >
+                      <img
+                        src={imgSrc(img)}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Zoom controls */}
-              <div className="hidden sm:flex flex-col items-center gap-3 pt-2">
+              <div className="hidden sm:flex flex-col items-center overflow-hidden">
                 <button
                   onClick={handleCloseModal}
                   className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors mb-2"
@@ -2020,7 +2047,7 @@ const ProductDetails = () => {
                 loading="lazy"
                 src={selectedReviewImage}
                 alt="Review image"
-                className="max-h-[80vh] max-w-full object-contain mx-auto rounded-xl"
+                className="w-full h-full object-contain"
               />
             )}
           </div>
