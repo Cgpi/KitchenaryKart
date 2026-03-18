@@ -35,80 +35,94 @@ function SubsubcategoryPage() {
   };
 
   return (
-    <div className="bg-stone-50 min-h-screen pt-4 pb-12 sm:pt-6 sm:pb-16 px-4 sm:px-6 lg:px-8">
-      {/* Loading Overlay */}
+    <div className="bg-white min-h-screen pt-4 pb-10 px-3 sm:px-6 lg:px-10">
+      
+      {/* Loading */}
       {loading && (
-        <div className="fixed inset-0 z-[9999] bg-stone-900/50 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white p-5 rounded-2xl shadow-xl flex flex-col items-center gap-3">
-            <Loader2 className="w-8 h-8 text-[#B91C1C] animate-spin" />
-            <span className="text-sm font-semibold text-stone-600">Loading Categories...</span>
+        <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white p-5 rounded-xl shadow-lg flex flex-col items-center gap-3">
+            <Loader2 className="w-7 h-7 text-[#B91C1C] animate-spin" />
+            <span className="text-sm font-medium text-gray-600">
+              Loading Categories...
+            </span>
           </div>
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto flex flex-col h-full">
-        {/* Header & Back Button */}
-        <div className="mb-6 sm:mb-8 flex items-center">
+      <div className="max-w-[1400px] mx-auto">
+
+        {/* Back */}
+        <div className="mb-5">
           <button
             onClick={() => navigate(-1)}
-            className="group flex items-center gap-2 px-4 py-2 bg-white text-stone-700 font-semibold rounded-xl border border-stone-200 shadow-sm hover:border-[#B91C1C] hover:text-[#B91C1C] hover:shadow-md transition-all active:scale-95"
+            className="flex items-center gap-2 text-gray-700 hover:text-[#B91C1C] transition"
           >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            Back
+            <ArrowLeft className="w-4 h-4" />
+            <span className="font-medium text-sm">Back</span>
           </button>
         </div>
 
-        {/* Dynamic Grid Layout */}
+        {/* GRID */}
         {subsubcategories.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5 lg:gap-6">
+          <div className="
+            grid 
+            grid-cols-2 
+            md:grid-cols-3 
+            lg:grid-cols-4 
+            gap-5 md:gap-7
+          ">
             {subsubcategories.map((subsub) => (
               <div
                 key={subsub.id}
                 onClick={() => handleSubsubcategoryClick(subsub.id)}
-                className="group cursor-pointer bg-white border border-stone-100 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-xl hover:border-[#B91C1C]/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full overflow-hidden"
+                className="cursor-pointer group"
               >
-                {/* Image Section */}
-                <div className="relative w-full aspect-square bg-[#F8F9FA] p-4 flex items-center justify-center overflow-hidden">
-                  <img
-                    src={subsub.image || logo}
-                    alt={subsub.name}
-                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-sm"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = logo;
-                    }}
-                  />
-                  {/* Subtle hover overlay to make it look premium */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.02] transition-colors duration-300" />
-                </div>
+                {/* TILE */}
+                <div>
 
-                {/* Content Section */}
-                <div className="p-3 sm:p-4 sm:pt-4 flex-grow flex flex-col justify-center">
-                  {/* Category Name */}
-                  <h3 className="text-[13px] sm:text-[15px] leading-tight sm:leading-snug font-bold text-stone-800 text-center group-hover:text-[#B91C1C] transition-colors line-clamp-2">
-                    {subsub.name}
-                  </h3>
+                  {/* SQUARE IMAGE */}
+                  <div className="w-full aspect-square bg-gray-100 flex items-center justify-center p-4 overflow-hidden">
+                    <img
+                      src={subsub.image || logo}
+                      alt={subsub.name}
+                      className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = logo;
+                      }}
+                    />
+                  </div>
+
+                  {/* TEXT */}
+                  <div className="pt-3 px-1">
+                    <h3 className="relative inline-block text-sm sm:text-base font-medium text-gray-800">
+                      {subsub.name}
+
+                      {/* underline animation */}
+                      <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-[#B91C1C] transition-all duration-300 group-hover:w-full"></span>
+                    </h3>
+                  </div>
+
                 </div>
               </div>
             ))}
           </div>
         ) : !loading ? (
-          /* Empty State */
-          <div className="flex flex-col items-center justify-center p-12 bg-white rounded-3xl shadow-sm border border-stone-100 flex-grow text-center mt-4">
-            <div className="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center mb-4">
-              <PackageX className="w-8 h-8 text-stone-400" />
-            </div>
-            <h3 className="text-lg font-bold text-stone-800 mb-2">No Categories Found</h3>
-            <p className="text-stone-500 max-w-sm text-sm">
-              There are no nested categories available under this section at the moment.
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <PackageX className="w-10 h-10 text-gray-400 mb-3" />
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">
+              No Categories Found
+            </h3>
+            <p className="text-gray-500 text-sm">
+              No subcategories available right now.
             </p>
           </div>
         ) : null}
+
       </div>
     </div>
   );
 }
 
 export default SubsubcategoryPage;
-
