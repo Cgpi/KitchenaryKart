@@ -44,7 +44,7 @@ const SimpleCategoryLayout = ({ category, subcategories, navigate }) => {
               className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
             />
 
-            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute inset-0 bg-black/40" />
 
             <div className="absolute top-6 left-1/2 -translate-x-1/2 text-center text-white">
   <h2 className="text-2xl font-bold">{category.name}</h2>
@@ -95,13 +95,14 @@ const SimpleCategoryLayout = ({ category, subcategories, navigate }) => {
               className="w-full h-full object-cover"
             />
 
-            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute inset-0 bg-black/40" />
 
             <div className="absolute bottom-4 left-4 text-white">
               <h2 className="text-lg font-bold">{category.name}</h2>
-              <p className="text-xs mt-2 text-black bg-white/90 px-2 py-1 rounded-md shadow-sm">
-    Explore Collections→
-  </p>
+            <p className="inline-flex items-center justify-center gap-1 text-xs mt-2 text-black bg-white/90 px-3 py-1.5 rounded-md shadow-sm">
+  Explore Collections
+  <span>→</span>
+</p>
             </div>
             
           </div>

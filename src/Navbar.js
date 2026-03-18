@@ -369,6 +369,7 @@ useEffect(() => {
       <div className="w-full h-56 overflow-hidden relative">
         <img
           src={activeData.image || logo}
+          key={activeData?.id}
           alt={activeData.name}
           loading="lazy"
           onError={(e) => {

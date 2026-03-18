@@ -133,7 +133,7 @@ const App = () => {
                 >
                   <HeroBanner />
                   <TopCategories />
-                  {/* <MostSellingProductList /> */}
+                  <MostSellingProductList />
                   {/* <NewArrivalProductList /> */}
 
                   {/* 5 category sections + subcategory product sections (slots 1–5) */}
