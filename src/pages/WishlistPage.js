@@ -126,7 +126,7 @@ const WishlistPage = () => {
 
                 {/* IMAGE */}
                 <div
-                  className="relative bg-gray-100 aspect-square mb-3 cursor-pointer"
+                  className="relative bg-white-100 aspect-square mb-3 cursor-pointer"
                   onClick={() =>
                     handleProductClick(item.productId, item.productName)
                   }
