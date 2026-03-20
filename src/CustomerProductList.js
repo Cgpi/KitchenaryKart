@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "./utils/api";
 import logo from "./images/piclogo.png";
 import { ProductSkeleton } from "./components/common/ProductSkeleton";
-import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
+import { SlidersHorizontal, X, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 /* PRICE + SORT */
 const pricePresets = [
@@ -108,23 +108,47 @@ const ProductCard = ({ p, navigate, getVariant, ratings }) => {
           src={images[currentIndex]}
           className="w-full h-full object-contain p-4 transition duration-300"
         />
+{images.length > 1 && (
+  <div className="md:hidden absolute bottom-0 left-0 w-full px-3 pb-[0px]">
+    
+    <div className="w-full h-[2px] bg-gray-200 rounded-full overflow-hidden flex">
+      
+      {images.map((_, i) => (
+        <div
+          key={i}
+          className={`h-full flex-1 transition-all duration-300 ${
+            i === currentIndex ? "bg-gray-800" : "bg-gray-300"
+          }`}
+        />
+      ))}
+      
+    </div>
+
+  </div>
+)}
 
         {/* ARROWS */}
         {images.length > 1 && (
           <>
-            <button
-              onClick={prevImage}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white p-2 shadow"
-            >
-              ‹
-            </button>
+<button
+  onClick={prevImage}
+className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 
+           opacity-0 group-hover:opacity-100 
+           transition duration-200
+           bg-white shadow-md w-8 h-12 items-center justify-center"
+>
+  <ChevronLeft size={18} />
+</button>
 
-            <button
-              onClick={nextImage}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white p-2 shadow"
-            >
-              ›
-            </button>
+<button
+  onClick={nextImage}
+className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 
+           opacity-0 group-hover:opacity-100 
+           transition duration-200
+           bg-white shadow-md w-8 h-12 items-center justify-center"
+>
+  <ChevronRight size={18} />
+</button>
           </>
         )}
       </div>
