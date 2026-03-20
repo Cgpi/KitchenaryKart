@@ -73,7 +73,7 @@ const ProductCard = ({ p, navigate, getVariant, ratings }) => {
       className="cursor-pointer group"
     >
       <div
-        className="relative aspect-square bg-gray-100 mb-3 overflow-hidden"
+        className="relative aspect-square bg-white mb-3 overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
       >
@@ -81,20 +81,36 @@ const ProductCard = ({ p, navigate, getVariant, ratings }) => {
           src={images[currentIndex]}
           className="w-full h-full object-contain p-4"
         />
-
+{/* 🔥 MOBILE IMAGE SLIDER (same as search page) */}
+{images.length > 1 && (
+  <div className="md:hidden absolute bottom-0 left-0 w-full px-3 pb-1">
+    <div className="w-full h-[2px] bg-gray-200 flex overflow-hidden">
+      {images.map((_, i) => (
+        <div
+          key={i}
+          className={`flex-1 ${
+            i === currentIndex ? "bg-gray-800" : "bg-gray-300"
+          }`}
+        />
+      ))}
+    </div>
+  </div>
+)}
         {images.length > 1 && (
           <>
             <button
               onClick={prevImage}
-              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md w-8 h-12 items-center justify-center"
-            >
+              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 
+           bg-white shadow-md w-8 h-12 items-center justify-center
+           opacity-0 group-hover:opacity-100 transition-opacity duration-200"    >
               <ChevronLeft size={18} />
             </button>
 
             <button
               onClick={nextImage}
-              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md w-8 h-12 items-center justify-center"
-            >
+             className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 
+           bg-white shadow-md w-8 h-12 items-center justify-center
+           opacity-0 group-hover:opacity-100 transition-opacity duration-200"    >
               <ChevronRight size={18} />
             </button>
           </>

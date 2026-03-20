@@ -184,11 +184,11 @@ const App = () => {
             <Route path="/most-selling-all" element={<Layout title="Best Sellers | Kitchenary Kart" canonical={`${BASE}/most-selling-all`}><MostsellingAll /></Layout>} />
 
             {/* 5 all-products routes — single component with slot prop */}
-            <Route path="/all-products" element={<Layout title="All Products | Kitchenary Kart" canonical={`${BASE}/all-products`}><HomeAllSubPage slot={1} /></Layout>} />
+            {/* <Route path="/all-products" element={<Layout title="All Products | Kitchenary Kart" canonical={`${BASE}/all-products`}><HomeAllSubPage slot={1} /></Layout>} />
             <Route path="/all-products2" element={<Layout title="All Products | Kitchenary Kart" canonical={`${BASE}/all-products2`}><HomeAllSubPage slot={2} /></Layout>} />
             <Route path="/all-products3" element={<Layout title="All Products | Kitchenary Kart" canonical={`${BASE}/all-products3`}><HomeAllSubPage slot={3} /></Layout>} />
             <Route path="/all-products4" element={<Layout title="All Products | Kitchenary Kart" canonical={`${BASE}/all-products4`}><HomeAllSubPage slot={4} /></Layout>} />
-            <Route path="/all-products5" element={<Layout title="All Products | Kitchenary Kart" canonical={`${BASE}/all-products5`}><HomeAllSubPage slot={5} /></Layout>} />
+            <Route path="/all-products5" element={<Layout title="All Products | Kitchenary Kart" canonical={`${BASE}/all-products5`}><HomeAllSubPage slot={5} /></Layout>} /> */}
 
             <Route path="/category/:id" element={<Layout canonical={`${BASE}/category`}><SubcategoryPage /></Layout>} />
             <Route path="/subcategory" element={<Layout canonical={`${BASE}/subcategory`}><SubcategoryPage /></Layout>} />
