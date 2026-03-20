@@ -44,7 +44,7 @@ const getCachedNewArrivals = () => {
   const [mobileExpanded, setMobileExpanded] = useState(null);
  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 990);
 const [newProducts, setNewProducts] = useState(() => getCachedNewArrivals());
-
+const [newSection, setNewSection] = useState(null);
 const [newLoading, setNewLoading] = useState(
   () => getCachedNewArrivals().length === 0
 );
@@ -577,6 +577,123 @@ useEffect(() => {
 
             {/* Category accordion list */}
             <div className="flex-1 overflow-y-auto">
+              {/* 🔥 NEW ARRIVALS ACCORDION */}
+{/* 🔴 NEW ACCORDION HEADER */}
+<div className="border-b border-stone-100">
+  <button
+    onClick={() =>
+      setMobileExpanded(mobileExpanded === "new" ? null : "new")
+    }
+    className="w-full flex items-center justify-between px-5 py-3.5
+               text-sm font-semibold text-charcoal hover:bg-stone-50
+               transition-colors text-left"
+  >
+    <span>New</span>
+    <ChevronDown
+      size={15}
+      className={`transition-transform duration-200 ${
+        mobileExpanded === "new"
+          ? "rotate-180 text-brand"
+          : "text-stone-400"
+      }`}
+    />
+  </button>
+
+  {/* 🔽 EXPANDED CONTENT */}
+  {mobileExpanded === "new" && (
+  <div className="bg-stone-50">
+
+    {/* 🟢 SHOP BY CATEGORY HEADER */}
+    <button
+      onClick={() =>
+        setNewSection(newSection === "category" ? null : "category")
+      }
+      className="w-full flex items-center justify-between px-5 py-3
+                 text-xs font-bold text-gray-500 uppercase tracking-wide
+                 border-b border-stone-200"
+    >
+      <span>Shop by Category</span>
+      <ChevronDown
+        size={14}
+        className={`transition-transform ${
+          newSection === "category" ? "rotate-180 text-brand" : ""
+        }`}
+      />
+    </button>
+
+    {/* 🟢 CATEGORY LIST */}
+    {newSection === "category" && (
+      <div>
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => {
+              navigate(`/category/${cat.id}/subcategories`);
+              setMobileOpen(false);
+            }}
+            className="w-full flex items-center justify-between
+                       pl-8 pr-5 py-3 text-left text-sm text-stone-600
+                       hover:text-brand hover:bg-gray-100 border-b border-stone-100"
+          >
+            <span>{cat.name}</span>
+            <ChevronRight size={13} className="text-stone-300" />
+          </button>
+        ))}
+      </div>
+    )}
+
+    {/* 🟡 FEATURED HEADER */}
+    <button
+      onClick={() =>
+        setNewSection(newSection === "featured" ? null : "featured")
+      }
+      className="w-full flex items-center justify-between px-5 py-3
+                 text-xs font-bold text-gray-500 uppercase tracking-wide
+                 border-b border-stone-200"
+    >
+      <span>Featured</span>
+      <ChevronDown
+        size={14}
+        className={`transition-transform ${
+          newSection === "featured" ? "rotate-180 text-brand" : ""
+        }`}
+      />
+    </button>
+
+    {/* 🟡 FEATURED LIST */}
+    {newSection === "featured" && (
+      <div>
+        <button
+          onClick={() => {
+            navigate("/new-arrivals");
+            setMobileOpen(false);
+          }}
+          className="w-full flex items-center gap-2 pl-8 pr-5 py-3 text-left
+                     text-sm text-stone-600 hover:text-brand hover:bg-gray-100
+                     border-b border-stone-100"
+        >
+          <ArrowRight size={13} />
+          Latest Drops
+        </button>
+
+        <button
+          onClick={() => {
+            navigate("/most-selling-all");
+            setMobileOpen(false);
+          }}
+          className="w-full flex items-center gap-2 pl-8 pr-5 py-3 text-left
+                     text-sm text-stone-600 hover:text-brand hover:bg-gray-100
+                     border-b border-stone-100"
+        >
+          <ArrowRight size={13} />
+          Best Sellers
+        </button>
+      </div>
+    )}
+
+  </div>
+)}
+</div>
               {categories.length === 0 ? (
                 <div className="flex items-center justify-center h-32">
                   <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />

@@ -72,7 +72,7 @@ function AllSubcategoriesPage() {
         />
       </Helmet>
 
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-10 py-6">
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10 py-6">
 
         {/* HEADER */}
         <div className="flex items-center gap-4 mb-8">
@@ -124,7 +124,7 @@ function AllSubcategoriesPage() {
                 <div>
 
                   {/* IMAGE (SQUARE) */}
-                  <div className="w-full aspect-square bg-gray-100 flex items-center justify-center p-4 overflow-hidden">
+                  <div className="w-full aspect-square bg-white-100 flex items-center justify-center p-4 overflow-hidden">
                     <img
                       src={category?.image || logo}
                       alt={category?.name || "Category"}
