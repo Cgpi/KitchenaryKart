@@ -1,124 +1,216 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProductList } from "./hooks/useProductList";
-import { ProductGrid } from "./components/common/ProductGrid";
-import { ProductSkeleton } from "./components/common/ProductSkeleton";
 import logo from "./images/piclogo.png";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+
+/* ⭐ PRODUCT CARD */
+const ProductCard = ({ product, onClick, getVariant }) => {
+  const variant = getVariant(product.variants || []);
+  const images =
+    variant?.images?.length > 0
+      ? variant.images.map((img) =>
+          img.startsWith("https") ? img : img
+        )
+      : [logo];
+
+  const price = variant?.price_with_gst || variant?.price || null;
+  const subcatName =
+    product.subcategories?.length > 0
+      ? product.subcategories[0].name
+      : "";
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [lastIndex, setLastIndex] = useState(0);
+  const startX = useRef(0);
+
+  const nextImage = (e) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => {
+      const next = prev === images.length - 1 ? 0 : prev + 1;
+      setLastIndex(next);
+      return next;
+    });
+  };
+
+  const prevImage = (e) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => {
+      const next = prev === 0 ? images.length - 1 : prev - 1;
+      setLastIndex(next);
+      return next;
+    });
+  };
+
+  /* Hover */
+  const handleEnter = () => {
+    if (lastIndex !== 0) setCurrentIndex(lastIndex);
+    else if (images[1]) setCurrentIndex(1);
+  };
+
+  const handleLeave = () => {
+    setCurrentIndex(0);
+  };
+
+  /* Swipe */
+  const handleTouchStart = (e) => {
+    startX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    const diff = e.touches[0].clientX - startX.current;
+
+    if (Math.abs(diff) > 50) {
+      if (diff < 0) nextImage(e);
+      else prevImage(e);
+      startX.current = e.touches[0].clientX;
+    }
+  };
+
+  return (
+    <div onClick={onClick} className="cursor-pointer group">
+      {/* IMAGE */}
+      <div
+        className="relative aspect-square bg-white-100 mb-3 overflow-hidden"
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+      >
+        <img
+          src={images[currentIndex]}
+          className="w-full h-full object-contain p-4 transition duration-300 group-hover:scale-105"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = logo;
+          }}
+        />
+
+        {/* MOBILE PROGRESS BAR */}
+        {images.length > 1 && (
+          <div className="md:hidden absolute bottom-0 left-0 w-full px-3 pb-[0px]">
+            <div className="w-full h-[2px] bg-gray-200 flex">
+              {images.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-full flex-1 transition-all duration-300 ${
+                    i === currentIndex ? "bg-gray-800" : "bg-gray-300"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* DESKTOP ARROWS */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 
+              opacity-0 group-hover:opacity-100 transition
+              bg-white shadow-md w-8 h-12 items-center justify-center"
+            >
+              <ChevronLeft size={18} />
+            </button>
+
+            <button
+              onClick={nextImage}
+              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 
+              opacity-0 group-hover:opacity-100 transition
+              bg-white shadow-md w-8 h-12 items-center justify-center"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* TEXT */}
+      {subcatName && (
+        <p className="text-[10px] font-semibold text-gray-500 uppercase mb-1 line-clamp-1">
+          {subcatName}
+        </p>
+      )}
+
+      <p className="text-sm font-medium line-clamp-2">
+        {product.name}
+      </p>
+
+      {price && (
+        <p className="font-semibold mt-1 text-gray-900">
+          ₹{Number(price).toLocaleString("en-IN")}
+        </p>
+      )}
+    </div>
+  );
+};
 
 const AllNewArrivals = () => {
   const navigate = useNavigate();
-  const { filteredProducts, loading, getFirstAvailableVariant } = useProductList(
-    "/product/new_arrivals"
-  );
+  const { filteredProducts, loading, getFirstAvailableVariant } =
+    useProductList("/product/new_arrivals");
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }, []);
 
-  const handleProductClick = (product) => {
-    navigate(`/product/${product.id}?name=${encodeURIComponent(product.name)}`);
-  };
-
-  const renderProduct = (product, getVariant) => {
-    const variant = getVariant(product.variants || []);
-    const imageUrl =
-      variant?.images?.[0]?.startsWith("https")
-        ? variant.images[0]
-        : variant?.images?.[0] || logo;
-    const price = variant?.price_with_gst || variant?.price || null;
-    const subcatName =
-      product.subcategories?.length > 0
-        ? product.subcategories[0].name
-        : "";
-
-    return (
-      <div
-        className="group bg-white rounded-2xl overflow-hidden cursor-pointer relative border border-red-100 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-red-200 h-[380px] flex flex-col"
-      >
-        {/* Image */}
-        <div
-          className="relative bg-gradient-to-br from-gray-50 to-amber-50/30 overflow-hidden flex-shrink-0"
-          style={{ aspectRatio: "1/1" }}
-        >
-          <img
-            loading="lazy"
-            src={imageUrl}
-            alt={variant?.name || product.name}
-            className="w-full h-full transition-transform duration-500 group-hover:scale-110"
-            style={{ objectFit: "contain", padding: "14px" }}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = logo;
-            }}
-          />
-        </div>
-
-        {/* Body - grows to fill remaining space */}
-        <div className="p-3 sm:p-3.5 flex flex-col flex-grow">
-          {subcatName && (
-            <p className="text-[9px] sm:text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1 line-clamp-1">
-              {subcatName}
-            </p>
-          )}
-          <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-snug line-clamp-2 mb-2 flex-grow">
-            {product.name}
-          </h3>
-          {price && (
-            <p className="font-black text-[#B91C1C] text-sm sm:text-base mt-auto">
-              ₹{Number(price).toLocaleString("en-IN")}
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-cream-100">
+    <div className="bg-white min-h-screen">
       <Helmet>
         <title>New Arrivals | Kitchenary Kart</title>
-        <meta
-          name="description"
-          content="Explore the latest kitchen products and HORECA supplies at Kitchenary Kart. Discover new arrivals with top quality."
-        />
-        <link rel="canonical" href="https://www.kitchenarykart.com/new-arrivals" />
-        <meta property="og:title" content="New Arrivals | Kitchenary Kart" />
-        <meta property="og:url" content="https://www.kitchenarykart.com/new-arrivals" />
       </Helmet>
 
-      <div className="container-main py-8">
-        {/* Page header */}
+      <div className="w-full px-6 md:px-10 lg:px-16 pt-6">
+        {/* HEADER */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-xl flex items-center justify-center border border-stone-200 bg-white text-stone-500 hover:border-brand hover:text-brand transition-colors shadow-sm"
+            className="w-10 h-10 rounded-xl flex items-center justify-center border bg-white shadow-sm"
           >
             <ArrowLeft size={18} />
           </button>
+
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.15em] text-brand mb-1">
-              Just Landed
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+              Just Dropped
             </p>
-            <h1 className="font-display font-bold text-2xl md:text-3xl text-charcoal flex items-center gap-2">
-              <Sparkles size={24} className="text-brand" />
+            <h1 className="text-2xl md:text-3xl font-semibold flex items-center gap-2">
+              <TrendingUp size={22} />
               New Arrivals
             </h1>
           </div>
         </div>
+      </div>
 
-        {/* Grid */}
-        <ProductGrid
-          products={filteredProducts}
-          loading={loading}
-          onProductClick={handleProductClick}
-          getFirstAvailableVariant={getFirstAvailableVariant}
-          renderProduct={renderProduct}
-          cols="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
-          emptyMessage="No new arrivals available"
-        />
+      {/* GRID */}
+      <div className="w-full px-6 md:px-10 lg:px-16 pb-10">
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-[250px] bg-gray-100 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-10">
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                getVariant={getFirstAvailableVariant}
+                onClick={() =>
+                  navigate(
+                    `/product/${product.id}?name=${encodeURIComponent(
+                      product.name
+                    )}`
+                  )
+                }
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

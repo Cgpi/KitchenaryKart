@@ -455,15 +455,26 @@ const ProductDetails = () => {
 
   const handleAddToCart = async () => {
     const user = JSON.parse(localStorage.getItem("user"));
+
     if (!user?.id) {
       toast.info("Please log in first.");
       navigate("/login");
       return;
     }
+
     if (!currentVariant) {
       toast.warning("Please select a variant.");
       return;
     }
+
+    // ✅ PRICE CHECK (IMPORTANT)
+    const price = currentVariant.price_with_gst ?? currentVariant.price ?? 0;
+
+    if (Number(price) < 1) {
+      toast.error("This product is not available for purchase.");
+      return;
+    }
+
     try {
       await api.post(
         `/Cart/cart_add/${user.id}`,
@@ -476,6 +487,7 @@ const ProductDetails = () => {
           },
         },
       );
+
       toast.success(
         <div>
           <strong>Added to Cart!</strong>
@@ -496,6 +508,7 @@ const ProductDetails = () => {
           </button>
         </div>,
       );
+
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (error) {
       toast.error("Failed to add to cart. Please try again.");
@@ -1039,7 +1052,7 @@ const ProductDetails = () => {
                         title={color}
                         className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all ${
                           currentVariant.color === color
-                            ? "border-brand shadow-button scale-105"
+                            ? "border-brand shadow-button scale-15"
                             : "border-stone-200 hover:border-brand/50"
                         }`}
                       >

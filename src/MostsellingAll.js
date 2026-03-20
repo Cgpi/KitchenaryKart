@@ -76,7 +76,7 @@ const ProductCard = ({ product, onClick, getVariant }) => {
     >
       {/* IMAGE */}
       <div
-        className="relative aspect-square bg-gray-100 mb-3 overflow-hidden"
+        className="relative aspect-square bg-white-100 mb-3 overflow-hidden"
         onMouseEnter={handleEnter}
         onMouseLeave={handleLeave}
         onTouchStart={handleTouchStart}
