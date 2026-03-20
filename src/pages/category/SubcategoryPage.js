@@ -97,7 +97,7 @@ function SubcategoryPage() {
       )}
 
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+       <div className="max-w-[1500px] mx-auto px-2 sm:px-4 lg:px-6 py-6 sm:py-8">
 
           {/* ── Page header ────────────────────────────────────────── */}
           <div className="flex items-center gap-3 mb-6 sm:mb-8">
@@ -124,27 +124,22 @@ function SubcategoryPage() {
 
           {/* ── Grid ───────────────────────────────────────────────── */}
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
               {[...Array(skeletonCount)].map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
             </div>
           ) : subcategories.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
               {subcategories.map((sub) => (
                 <button
                   key={sub.id}
                   onClick={() => handleClick(id, sub.id)}
                   aria-label={`Browse ${sub.name}`}
-                  className="group bg-white rounded-2xl overflow-hidden shadow-sm
-                             border border-stone-100
-                             hover:shadow-md hover:border-red-200
-                             transition-all duration-200
-                             text-left outline-none
-                             focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+                 className="group cursor-pointer"
                 >
                   {/* Image */}
-                  <div className="relative w-full aspect-square bg-stone-50 overflow-hidden">
+                  <div className="w-full aspect-square bg-white flex items-center justify-center p-2 sm:p-3 overflow-hidden">
                     <img
                       src={sub.image || logo}
                       alt={sub.name}
@@ -153,19 +148,17 @@ function SubcategoryPage() {
                         e.target.onerror = null;
                         e.target.src = logo;
                       }}
-                      className="absolute inset-0 w-full h-full object-contain p-3
-                                 transition-transform duration-300 group-hover:scale-105"
+                      className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-110"
                     />
                   </div>
 
                   {/* Label */}
-                  <div className="px-2 py-3 text-center">
-                    <h3
-                      className="text-xs sm:text-sm font-semibold text-gray-700 leading-snug line-clamp-2
-                                 group-hover:text-red-700 transition-colors duration-200"
-                    >
-                      {sub.name}
-                    </h3>
+                  <div className="pt-3 px-1">
+  <h3 className="relative inline-block text-sm sm:text-base font-medium text-gray-800">
+  {sub.name}
+
+  <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-[#B91C1C] transition-all duration-300 group-hover:w-full"></span>
+</h3>
                   </div>
                 </button>
               ))}

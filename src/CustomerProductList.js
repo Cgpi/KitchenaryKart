@@ -4,7 +4,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "./utils/api";
 import logo from "./images/piclogo.png";
 import { ProductSkeleton } from "./components/common/ProductSkeleton";
-import { SlidersHorizontal, X, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  SlidersHorizontal,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 /* PRICE + SORT */
 const pricePresets = [
@@ -28,152 +33,105 @@ const StarRating = ({ rating }) => (
   </div>
 );
 
-/* 🔥 PRODUCT CARD */
+/* PRODUCT CARD */
 const ProductCard = ({ p, navigate, getVariant, ratings }) => {
   const v = getVariant(p.variants || []);
   const images = v?.images?.length ? v.images : [logo];
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [lastIndex, setLastIndex] = useState(0);
-  const [isHover, setIsHover] = useState(false);
-
   const startX = useRef(0);
 
   const nextImage = (e) => {
     e.stopPropagation();
-    setCurrentIndex((prev) => {
-      const next = prev === images.length - 1 ? 0 : prev + 1;
-      setLastIndex(next);
-      return next;
-    });
+    setCurrentIndex((prev) =>
+      prev === images.length - 1 ? 0 : prev + 1
+    );
   };
 
   const prevImage = (e) => {
     e.stopPropagation();
-    setCurrentIndex((prev) => {
-      const next = prev === 0 ? images.length - 1 : prev - 1;
-      setLastIndex(next);
-      return next;
-    });
+    setCurrentIndex((prev) =>
+      prev === 0 ? images.length - 1 : prev - 1
+    );
   };
 
-  /* 🖱 Hover Logic */
-  const handleEnter = () => {
-    setIsHover(true);
-    if (lastIndex !== 0) {
-      setCurrentIndex(lastIndex);
-    } else if (images[1]) {
-      setCurrentIndex(1);
-    }
-  };
-
-  const handleLeave = () => {
-    setIsHover(false);
-    setCurrentIndex(0);
-  };
-
-  /* 📱 Mobile Swipe */
   const handleTouchStart = (e) => {
     startX.current = e.touches[0].clientX;
   };
 
   const handleTouchMove = (e) => {
     const diff = e.touches[0].clientX - startX.current;
-
     if (Math.abs(diff) > 50) {
-      if (diff < 0) {
-        nextImage(e);
-      } else {
-        prevImage(e);
-      }
+      diff < 0 ? nextImage(e) : prevImage(e);
       startX.current = e.touches[0].clientX;
     }
   };
 
   return (
     <div
-      onClick={() =>
-        navigate(`/product/${p.id}?name=${p.name}`)
-      }
+      onClick={() => navigate(`/product/${p.id}?name=${p.name}`)}
       className="cursor-pointer group"
     >
       <div
         className="relative aspect-square bg-gray-100 mb-3 overflow-hidden"
-        onMouseEnter={handleEnter}
-        onMouseLeave={handleLeave}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
       >
         <img
           src={images[currentIndex]}
-          className="w-full h-full object-contain p-4 transition duration-300"
+          className="w-full h-full object-contain p-4"
         />
-{images.length > 1 && (
-  <div className="md:hidden absolute bottom-0 left-0 w-full px-3 pb-[0px]">
-    
-    <div className="w-full h-[2px] bg-gray-200 rounded-full overflow-hidden flex">
-      
-      {images.map((_, i) => (
-        <div
-          key={i}
-          className={`h-full flex-1 transition-all duration-300 ${
-            i === currentIndex ? "bg-gray-800" : "bg-gray-300"
-          }`}
-        />
-      ))}
-      
-    </div>
 
-  </div>
-)}
-
-        {/* ARROWS */}
         {images.length > 1 && (
           <>
-<button
-  onClick={prevImage}
-className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 
-           opacity-0 group-hover:opacity-100 
-           transition duration-200
-           bg-white shadow-md w-8 h-12 items-center justify-center"
->
-  <ChevronLeft size={18} />
-</button>
+            <button
+              onClick={prevImage}
+              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md w-8 h-12 items-center justify-center"
+            >
+              <ChevronLeft size={18} />
+            </button>
 
-<button
-  onClick={nextImage}
-className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 
-           opacity-0 group-hover:opacity-100 
-           transition duration-200
-           bg-white shadow-md w-8 h-12 items-center justify-center"
->
-  <ChevronRight size={18} />
-</button>
+            <button
+              onClick={nextImage}
+              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md w-8 h-12 items-center justify-center"
+            >
+              <ChevronRight size={18} />
+            </button>
           </>
         )}
       </div>
 
       <p className="text-sm font-medium">{p.name}</p>
 
-      {ratings[v?.id] && (
-        <StarRating rating={ratings[v.id]} />
-      )}
+      {ratings[v?.id] && <StarRating rating={ratings[v.id]} />}
 
-      <p className="font-semibold mt-1">₹{v?.price}</p>
+      <p className="font-semibold mt-1">
+        ₹{v ? new Intl.NumberFormat("en-IN").format(v.price) : "N/A"}
+      </p>
     </div>
   );
 };
 
 const CustomerProductList = () => {
   const [products, setProducts] = useState([]);
-  const [searchQuery] = useState("");
   const navigate = useNavigate();
   const { subcategoryId, subsubcategoryId } = useParams();
+
   const [ratings, setRatings] = useState({});
+
+  /* MAIN FILTER STATE */
   const [priceRange, setPriceRange] = useState([0, 250000]);
   const [sortOrder, setSortOrder] = useState("");
+
+  /* TEMP STATE (for drawer) */
+  const [tempPrice, setTempPrice] = useState([0, 250000]);
+  const [tempSort, setTempSort] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  /* ✅ FIX: declare BEFORE useMemo */
+  const getVariant = (v) => v.find((x) => x.stock > 0);
 
   useEffect(() => {
     fetchProducts();
@@ -182,18 +140,20 @@ const CustomerProductList = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+
       const url = `${process.env.REACT_APP_API_BASE_URL}/product/filter`;
       const params = {};
+
       if (subsubcategoryId) params.subsubcategoryId = subsubcategoryId;
       else if (subcategoryId) params.subcategoryId = subcategoryId;
 
       const res = await api.get(url, { params });
-      setProducts(res.data);
+      const data = Array.isArray(res.data) ? res.data : [];
 
-      res.data.forEach((p) =>
-        p.variants?.forEach((v) =>
-          fetchVariantReviews(v.id)
-        )
+      setProducts(data);
+
+      data.forEach((p) =>
+        p.variants?.forEach((v) => fetchVariantReviews(v.id))
       );
     } finally {
       setLoading(false);
@@ -205,8 +165,8 @@ const CustomerProductList = () => {
       const { data } = await api.get(`/Reviews/variant/${variantId}`);
       if (data?.length) {
         const avg =
-          data.reduce((s, r) => s + (r.rating || 0), 0) /
-          data.length;
+          data.reduce((s, r) => s + (r.rating || 0), 0) / data.length;
+
         setRatings((prev) => ({
           ...prev,
           [variantId]: avg,
@@ -215,53 +175,66 @@ const CustomerProductList = () => {
     } catch {}
   };
 
+  /* 🔥 SAME FILTER LOGIC AS SEARCH */
   const filteredProducts = useMemo(() => {
     return [...products]
-      .filter((p) =>
-        p.name?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
       .filter((p) => {
-        const price = p.variants?.[0]?.price || 0;
+        const v = getVariant(p.variants || []);
+        if (!v) return false;
+
+        const price = v.price;
+        if (!price || price < 1) return false;
+
         return price >= priceRange[0] && price <= priceRange[1];
       })
       .sort((a, b) => {
-        const pa = a.variants?.[0]?.price || 0;
-        const pb = b.variants?.[0]?.price || 0;
-        return sortOrder === "asc"
-          ? pa - pb
-          : sortOrder === "desc"
-          ? pb - pa
-          : 0;
-      });
-  }, [products, searchQuery, priceRange, sortOrder]);
+        const va = getVariant(a.variants || []);
+        const vb = getVariant(b.variants || []);
 
-  const getVariant = (v) => v.find((x) => x.stock > 0);
+        const pa = va?.price ?? Infinity;
+        const pb = vb?.price ?? Infinity;
+
+        if (sortOrder === "asc") return pa - pb;
+        if (sortOrder === "desc") return pb - pa;
+        return 0;
+      });
+  }, [products, priceRange, sortOrder]);
 
   return (
     <div className="bg-white min-h-screen">
-
       {/* HEADER */}
       <div className="w-full px-6 md:px-10 lg:px-16 pt-6">
-        {/* <h1 className="text-2xl font-semibold mb-4">Kitchen Tool Sets</h1> */}
-
-        <div className="flex flex-wrap gap-3 mb-6">
-          {/* {["Material", "Features", "Product Type", "Brands", "Set Size"].map(
-            (item) => (
-              <button
-                key={item}
-                className="border px-4 py-2 text-sm flex items-center gap-2 hover:border-black"
-              >
-                {item} <ChevronDown size={14} />
-              </button>
-            )
-          )} */}
-
+        <div className="flex gap-3 mb-6">
           <button
-            onClick={() => setFilterOpen(true)}
+            onClick={() => {
+              setTempSort(sortOrder);
+              setTempPrice(priceRange);
+              setFilterOpen(true);
+            }}
             className="border px-4 py-2 flex items-center gap-2"
           >
             <SlidersHorizontal size={14} /> Sort & Filter
           </button>
+        </div>
+         {/* SELECTED FILTERS */}
+        <div className="flex gap-2 flex-wrap mb-6">
+          {sortOrder && (
+            <span className="text-xs bg-gray-100 px-3 py-1 rounded-full">
+              {sortOptions.find(s => s.value === sortOrder)?.label}
+            </span>
+          )}
+
+          {priceRange && (
+            <span className="text-xs bg-gray-100 px-3 py-1 rounded-full">
+              {
+                pricePresets.find(
+                  p =>
+                    p.range[0] === priceRange[0] &&
+                    p.range[1] === priceRange[1]
+                )?.label
+              }
+            </span>
+          )}
         </div>
       </div>
 
@@ -292,52 +265,73 @@ const CustomerProductList = () => {
       {filterOpen && (
         <>
           <div
-            className="fixed left-0 right-0 bottom-0 top-[120px] bg-black/40"
-            onClick={() => setFilterOpen(false)}
+            className="fixed inset-0 bg-black/40 z-[100]"
+            onClick={() => {
+              setTempSort(sortOrder);
+              setTempPrice(priceRange);
+              setFilterOpen(false);
+            }}
           />
 
-         <div className="fixed right-0 top-[120px] h-[calc(100%-120px)] w-[350px] bg-white shadow-xl p-6 overflow-y-auto">
-  <div className="flex justify-between mb-6">
-    <h2 className="text-lg font-semibold">Sort & Filter</h2>
-    <X onClick={() => setFilterOpen(false)} />
-  </div>
+ <div className="fixed right-0 top-0 h-full w-[320px] bg-white p-6 shadow-xl z-[110] overflow-y-auto">
+            <div className="flex justify-between mb-6">
+              <h2 className="text-lg font-semibold">Sort & Filter</h2>
+              <X onClick={() => setFilterOpen(false)} />
+            </div>
 
-  {/* SORT */}
-  <div className="mb-6">
-    <h3 className="font-medium mb-2">Sort By</h3>
-    {sortOptions.map((opt) => (
-      <label key={opt.value} className="block mb-2">
-        <input
-          type="radio"
-          checked={sortOrder === opt.value}
-          onChange={() => setSortOrder(opt.value)}
-        />{" "}
-        {opt.label}
-      </label>
-    ))}
-  </div>
+            {/* SORT */}
+            <div className="mb-6">
+              {sortOptions.map((opt) => (
+                <label key={opt.value} className="block mb-2">
+                  <input
+                    type="radio"
+                    checked={tempSort === opt.value}
+                    onChange={() => setTempSort(opt.value)}
+                  />{" "}
+                  {opt.label}
+                </label>
+              ))}
+            </div>
 
-  {/* PRICE */}
-  <div>
-    <h3 className="font-medium mb-2">Price</h3>
-    {pricePresets.map((p) => (
-      <button
-        key={p.label}
-        onClick={() => setPriceRange(p.range)}
-        className="block mb-2 text-sm"
-      >
-        {p.label}
-      </button>
-    ))}
-  </div>
+            {/* PRICE */}
+            <div>
+              {pricePresets.map((p) => (
+                <button
+                  key={p.label}
+                  onClick={() => setTempPrice(p.range)}
+                  className={`block mb-2 text-sm ${
+                    tempPrice[0] === p.range[0] &&
+                    tempPrice[1] === p.range[1]
+                      ? "font-semibold text-black"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
 
-  <button
-    onClick={() => setFilterOpen(false)}
-    className="mt-6 w-full bg-black text-white py-3"
-  >
-    APPLY
-  </button>
-</div>
+            <button
+              onClick={() => {
+                setTempSort("");
+                setTempPrice([0, 250000]);
+              }}
+              className="w-full border py-2 mt-4"
+            >
+              CLEAR ALL
+            </button>
+
+            <button
+              onClick={() => {
+                setSortOrder(tempSort);
+                setPriceRange(tempPrice);
+                setFilterOpen(false);
+              }}
+              className="mt-4 w-full bg-black text-white py-3"
+            >
+              APPLY
+            </button>
+          </div>
         </>
       )}
     </div>
