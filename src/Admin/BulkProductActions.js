@@ -204,7 +204,7 @@ const BulkProductActions = () => {
           title="Import Variants Only"
           description="Upload variants using product_code."
           sampleApi="/api/variants/sample"
-          importApi="/api/variants/import"
+          importApi="/api/variants/import-zip"
           label="variants-import"
         />
 
