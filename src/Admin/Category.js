@@ -164,7 +164,9 @@ const CategoryManager = () => {
           <ul className="flex flex-col gap-2">
             {topCategories.map((category) => (
               <li key={category.id} className="flex justify-between items-center bg-white border border-stone-200 rounded p-3 shadow-sm">
-                <span>{category.name}</span>
+               <span className="text-sm font-medium text-stone-800">
+  #{category.id} - {category.name}
+</span>
                 {category.image && (
                   <img
                     src={category.image}
@@ -301,7 +303,9 @@ const CategoryManager = () => {
           <ul className="flex flex-col gap-3">
             {categories.map((category) => (
               <li key={category.id} className="flex justify-between items-center bg-white border border-stone-200 rounded p-4 shadow-sm">
-                <span className="font-medium text-charcoal">{category.name}</span>
+               <span className="text-sm font-medium text-stone-800">
+  #{category.id} - {category.name}
+</span>
                 {category.image && (
                   <img
                     src={category.image}

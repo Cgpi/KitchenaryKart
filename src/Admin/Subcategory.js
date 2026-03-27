@@ -244,7 +244,7 @@ const fetchSubcategories = async () => {
               <option value="">Select Category</option>
               {filteredCategories.length > 0 ? (
                 filteredCategories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  <option key={cat.id} value={cat.id}>#{cat.id} - {cat.name}</option>
                 ))
               ) : (
                 <option disabled>No results found</option>
@@ -326,7 +326,7 @@ const fetchSubcategories = async () => {
                                   className="w-10 h-10 object-cover rounded-lg border border-stone-200"
                                 />
                               )}
-                              <span className="text-sm text-stone-700">{subcategory.name}</span>
+                              <span className="text-sm text-stone-700">#{subcategory.id}-{subcategory.name}</span>
                             </div>
                             <div className="flex gap-2">
                               <button
