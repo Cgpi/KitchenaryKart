@@ -243,7 +243,7 @@ useEffect(() => {
                 );
                 return (
                   <option key={sub.id} value={sub.id}>
-                    {sub.name.trim()}{mainCategory ? ` (${mainCategory.name.trim()})` : ""}
+                    #{sub.id}-{sub.name.trim()}{mainCategory ? ` (${mainCategory.name.trim()})` : ""}
                   </option>
                 );
               })}
@@ -303,7 +303,7 @@ useEffect(() => {
                   onClick={() => setOpenIndex(isOpen ? null : index)}
                 >
                   <span className="font-semibold text-stone-800 text-sm">
-                    {group.subcategory.name}
+                   #{group.subcategory.id}-{group.subcategory.name}
                     {mainCategory ? <span className="text-stone-500 font-normal"> ({mainCategory.name})</span> : ""}
                   </span>
                   <div className="flex items-center gap-2">
@@ -321,7 +321,7 @@ useEffect(() => {
                             {item.image && (
                               <img src={item.image} alt={item.name} className="w-10 h-10 object-cover rounded-lg border border-stone-200" />
                             )}
-                            <span className="text-sm text-stone-700">{item.name}</span>
+                            <span className="text-sm text-stone-700">#{item.id}-{item.name}</span>
                           </div>
                           <div className="flex gap-2">
                             <button

@@ -4,7 +4,7 @@ import axios from 'axios';
 import AddProductForm from './AddProductForm';
 import UpdateProductForm from './UpdateProductForm';
 import logo from "../images/piclogo.png";
-
+import BulkProductActions from './BulkProductActions';
 const ProductList = () => {
     const [products, setProducts] = useState([]);
    
@@ -734,7 +734,8 @@ useEffect(() => {
             <h2 className="text-2xl font-bold mb-4 text-stone-800">Product List</h2>
             <div className="mb-4">
                 <button className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm font-semibold transition" onClick={() => setIsAdding(true)}>+ Add New Product</button>
-            </div>
+              {/* 🔥 Bulk Import / Export Section */}
+  <BulkProductActions /></div>
 
 {/* Search and Filter Section */}
 <div className="flex flex-wrap gap-2 mb-4">
@@ -1662,6 +1663,9 @@ useEffect(() => {
                 <thead>
                     <tr className="bg-red-700 text-white">
                         <th className="px-3 py-3 text-xs font-semibold text-left border-r border-red-600 w-10">Sr.</th>
+                        <th className="px-3 py-3 text-xs font-semibold text-left border-r border-red-600 w-14">
+  ID
+</th>
                         <th className="px-3 py-3 text-xs font-semibold text-left border-r border-red-600">Name</th>
                         <th className="px-3 py-3 text-xs font-semibold text-left border-r border-red-600 w-20">HSN</th>
                         <th className="px-3 py-3 text-xs font-semibold text-left border-r border-red-600 w-32">Created &amp; Updated</th>
@@ -1676,7 +1680,7 @@ useEffect(() => {
                 {productsLoading ? (
                   Array.from({ length: itemsPerPage }).map((_, i) => (
                     <tr key={i}>
-                      {[...Array(9)].map((__, j) => (
+                     {[...Array(10)].map((__, j) => (
                         <td key={j} className="px-3 py-2.5">
                           <div className="h-3.5 bg-stone-200 rounded animate-pulse" />
                         </td>
@@ -1687,6 +1691,9 @@ useEffect(() => {
                         <React.Fragment key={product.id}>
                         <tr className="hover:bg-red-50 transition-colors">
                           <td className="px-3 py-3 text-xs text-stone-500 border-r border-stone-200">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                          <td className="px-3 py-3 text-xs text-stone-600 border-r border-stone-200">
+  #{product.id}
+</td>
                           <td className="px-3 py-3 text-xs text-stone-800 font-medium border-r border-stone-200">
                             <span className="block whitespace-normal break-words">{product.name}</span>
                           </td>
