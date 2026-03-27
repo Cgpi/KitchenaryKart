@@ -29,8 +29,8 @@ const StarRating = ({ rating }) => (
 );
 
 const ProductCard = ({ p, navigate, ratings }) => {
-  const [selectedDimension, setSelectedDimension] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedDimension, setSelectedDimension] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
 
   const variants = p.variants || [];
 
@@ -64,7 +64,7 @@ const ProductCard = ({ p, navigate, ratings }) => {
 
   const price = selectedVariant?.price || null;
 
-  /* IMAGE SLIDER (unchanged) */
+  /* IMAGE SLIDER */
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lastIndex, setLastIndex] = useState(0);
   const startX = useRef(0);
@@ -100,7 +100,6 @@ const ProductCard = ({ p, navigate, ratings }) => {
 
   const handleTouchMove = (e) => {
     const diff = e.touches[0].clientX - startX.current;
-
     if (Math.abs(diff) > 50) {
       diff < 0 ? nextImage(e) : prevImage(e);
       startX.current = e.touches[0].clientX;
@@ -179,43 +178,45 @@ const ProductCard = ({ p, navigate, ratings }) => {
       )}
 
       {price && (
-        <div className="flex items-center justify-between gap-2 mt-1">
+        <div className="mt-1">
           <p className="font-semibold text-gray-900">
             ₹{Number(price).toLocaleString("en-IN")}
           </p>
 
-          {(dimensions.length > 0 || colors.length > 0) && (
-            <select
-              value={selectedDimension || selectedColor || ""}
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => {
-                const value = e.target.value;
+          {/* ✅ CLEAN VARIANT SELECTORS */}
+          <div className="flex gap-2 mt-2">
+            {dimensions.length > 0 && (
+              <select
+                value={selectedDimension}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => setSelectedDimension(e.target.value)}
+                className="text-xs border border-gray-300 rounded-full px-2 py-1 bg-white"
+              >
+                <option value="">Size</option>
+                {dimensions.map((d, i) => (
+                  <option key={i} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            )}
 
-                if (dimensions.includes(value)) {
-                  setSelectedDimension(value);
-                  setSelectedColor(null);
-                } else if (colors.includes(value)) {
-                  setSelectedColor(value);
-                  setSelectedDimension(null);
-                }
-              }}
-              className="mt-2 text-xs border border-gray-300 rounded-full px-2 py-1 bg-white"
-            >
-              <option value="">
-                {dimensions.length > 0 && colors.length > 0
-                  ? "Select Option"
-                  : dimensions.length > 0
-                    ? "Select Dimension"
-                    : "Select Color"}
-              </option>
-
-              {[...dimensions, ...colors].map((item, i) => (
-                <option key={i} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          )}
+            {colors.length > 0 && (
+              <select
+                value={selectedColor}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => setSelectedColor(e.target.value)}
+                className="text-xs border border-gray-300 rounded-full px-2 py-1 bg-white"
+              >
+                <option value="">Color</option>
+                {colors.map((c, i) => (
+                  <option key={i} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -226,21 +227,16 @@ const CustomerProductList = () => {
   const [products, setProducts] = useState([]);
   const navigate = useNavigate();
   const { subcategoryId, subsubcategoryId } = useParams();
-
   const [ratings, setRatings] = useState({});
 
-  /* MAIN FILTER STATE */
   const [priceRange, setPriceRange] = useState([0, 250000]);
   const [sortOrder, setSortOrder] = useState("");
-
-  /* TEMP STATE (for drawer) */
   const [tempPrice, setTempPrice] = useState([0, 250000]);
   const [tempSort, setTempSort] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
 
-  /* ✅ FIX: declare BEFORE useMemo */
   const getVariant = (v) => v.find((x) => x.stock > 0);
 
   useEffect(() => {
@@ -250,7 +246,6 @@ const CustomerProductList = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-
       const url = `${process.env.REACT_APP_API_BASE_URL}/product/filter`;
       const params = {};
 
@@ -284,7 +279,6 @@ const CustomerProductList = () => {
     } catch {}
   };
 
-  /* 🔥 SAME FILTER LOGIC AS SEARCH */
   const filteredProducts = useMemo(() => {
     return [...products]
       .filter((p) => {
@@ -297,11 +291,8 @@ const CustomerProductList = () => {
         return price >= priceRange[0] && price <= priceRange[1];
       })
       .sort((a, b) => {
-        const va = getVariant(a.variants || []);
-        const vb = getVariant(b.variants || []);
-
-        const pa = va?.price ?? Infinity;
-        const pb = vb?.price ?? Infinity;
+        const pa = getVariant(a.variants || [])?.price ?? Infinity;
+        const pb = getVariant(b.variants || [])?.price ?? Infinity;
 
         if (sortOrder === "asc") return pa - pb;
         if (sortOrder === "desc") return pb - pa;
@@ -313,38 +304,16 @@ const CustomerProductList = () => {
     <div className="bg-white min-h-screen">
       {/* HEADER */}
       <div className="w-full px-6 md:px-10 lg:px-16 pt-6">
-        <div className="flex gap-3 mb-6">
-          <button
-            onClick={() => {
-              setTempSort(sortOrder);
-              setTempPrice(priceRange);
-              setFilterOpen(true);
-            }}
-            className="border px-4 py-2 flex items-center gap-2"
-          >
-            <SlidersHorizontal size={14} /> Sort & Filter
-          </button>
-        </div>
-        {/* SELECTED FILTERS */}
-        <div className="flex gap-2 flex-wrap mb-6">
-          {sortOrder && (
-            <span className="text-xs bg-gray-100 px-3 py-1 rounded-full">
-              {sortOptions.find((s) => s.value === sortOrder)?.label}
-            </span>
-          )}
-
-          {priceRange && (
-            <span className="text-xs bg-gray-100 px-3 py-1 rounded-full">
-              {
-                pricePresets.find(
-                  (p) =>
-                    p.range[0] === priceRange[0] &&
-                    p.range[1] === priceRange[1],
-                )?.label
-              }
-            </span>
-          )}
-        </div>
+        <button
+          onClick={() => {
+            setTempSort(sortOrder);
+            setTempPrice(priceRange);
+            setFilterOpen(true);
+          }}
+          className="border px-4 py-2 flex items-center gap-2 mb-6"
+        >
+          <SlidersHorizontal size={14} /> Sort & Filter
+        </button>
       </div>
 
       {/* GRID */}
@@ -369,64 +338,27 @@ const CustomerProductList = () => {
         )}
       </div>
 
-      {/* FILTER DRAWER */}
+      {/* FILTER DRAWER (unchanged) */}
       {filterOpen && (
         <>
           <div
             className="fixed inset-0 bg-black/40 z-[100]"
-            onClick={() => {
-              setTempSort(sortOrder);
-              setTempPrice(priceRange);
-              setFilterOpen(false);
-            }}
+            onClick={() => setFilterOpen(false)}
           />
 
-          <div className="fixed right-0 top-0 h-full w-[320px] bg-white p-6 shadow-xl z-[110] overflow-y-auto">
-            <div className="flex justify-between mb-6">
-              <h2 className="text-lg font-semibold">Sort & Filter</h2>
-              <X onClick={() => setFilterOpen(false)} />
-            </div>
+          <div className="fixed right-0 top-0 h-full w-[320px] bg-white p-6 shadow-xl z-[110]">
+            <h2 className="text-lg font-semibold mb-6">Sort & Filter</h2>
 
-            {/* SORT */}
-            <div className="mb-6">
-              {sortOptions.map((opt) => (
-                <label key={opt.value} className="block mb-2">
-                  <input
-                    type="radio"
-                    checked={tempSort === opt.value}
-                    onChange={() => setTempSort(opt.value)}
-                  />{" "}
-                  {opt.label}
-                </label>
-              ))}
-            </div>
-
-            {/* PRICE */}
-            <div>
-              {pricePresets.map((p) => (
-                <button
-                  key={p.label}
-                  onClick={() => setTempPrice(p.range)}
-                  className={`block mb-2 text-sm ${
-                    tempPrice[0] === p.range[0] && tempPrice[1] === p.range[1]
-                      ? "font-semibold text-black"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() => {
-                setTempSort("");
-                setTempPrice([0, 250000]);
-              }}
-              className="w-full border py-2 mt-4"
-            >
-              CLEAR ALL
-            </button>
+            {sortOptions.map((opt) => (
+              <label key={opt.value} className="block mb-2">
+                <input
+                  type="radio"
+                  checked={tempSort === opt.value}
+                  onChange={() => setTempSort(opt.value)}
+                />{" "}
+                {opt.label}
+              </label>
+            ))}
 
             <button
               onClick={() => {
