@@ -4,12 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "./utils/api";
 import logo from "./images/piclogo.png";
 import { ProductSkeleton } from "./components/common/ProductSkeleton";
-import {
-  SlidersHorizontal,
-  X,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { SlidersHorizontal, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 /* PRICE + SORT */
 const pricePresets = [
@@ -33,27 +28,71 @@ const StarRating = ({ rating }) => (
   </div>
 );
 
-/* PRODUCT CARD */
-const ProductCard = ({ p, navigate, getVariant, ratings }) => {
-  const v = getVariant(p.variants || []);
-  const images = v?.images?.length ? v.images : [logo];
+const ProductCard = ({ p, navigate, ratings }) => {
+  const [selectedDimension, setSelectedDimension] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
 
+  const variants = p.variants || [];
+
+  /* ✅ UNIQUE OPTIONS */
+  const dimensions = useMemo(
+    () => [...new Set(variants.map((v) => v.otherDimensions).filter(Boolean))],
+    [variants],
+  );
+
+  const colors = useMemo(
+    () => [...new Set(variants.map((v) => v.color).filter(Boolean))],
+    [variants],
+  );
+
+  /* ✅ SELECTED VARIANT */
+  const selectedVariant = useMemo(() => {
+    return (
+      variants.find(
+        (v) =>
+          (!selectedDimension || v.otherDimensions === selectedDimension) &&
+          (!selectedColor || v.color === selectedColor) &&
+          v.stock > 0,
+      ) ||
+      variants.find((v) => v.stock > 0) ||
+      null
+    );
+  }, [variants, selectedDimension, selectedColor]);
+
+  const images =
+    selectedVariant?.images?.length > 0 ? selectedVariant.images : [logo];
+
+  const price = selectedVariant?.price || null;
+
+  /* IMAGE SLIDER (unchanged) */
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [lastIndex, setLastIndex] = useState(0);
   const startX = useRef(0);
 
   const nextImage = (e) => {
     e.stopPropagation();
-    setCurrentIndex((prev) =>
-      prev === images.length - 1 ? 0 : prev + 1
-    );
+    setCurrentIndex((prev) => {
+      const next = prev === images.length - 1 ? 0 : prev + 1;
+      setLastIndex(next);
+      return next;
+    });
   };
 
   const prevImage = (e) => {
     e.stopPropagation();
-    setCurrentIndex((prev) =>
-      prev === 0 ? images.length - 1 : prev - 1
-    );
+    setCurrentIndex((prev) => {
+      const next = prev === 0 ? images.length - 1 : prev - 1;
+      setLastIndex(next);
+      return next;
+    });
   };
+
+  const handleEnter = () => {
+    if (lastIndex !== 0) setCurrentIndex(lastIndex);
+    else if (images[1]) setCurrentIndex(1);
+  };
+
+  const handleLeave = () => setCurrentIndex(0);
 
   const handleTouchStart = (e) => {
     startX.current = e.touches[0].clientX;
@@ -61,6 +100,7 @@ const ProductCard = ({ p, navigate, getVariant, ratings }) => {
 
   const handleTouchMove = (e) => {
     const diff = e.touches[0].clientX - startX.current;
+
     if (Math.abs(diff) > 50) {
       diff < 0 ? nextImage(e) : prevImage(e);
       startX.current = e.touches[0].clientX;
@@ -69,61 +109,115 @@ const ProductCard = ({ p, navigate, getVariant, ratings }) => {
 
   return (
     <div
-      onClick={() => navigate(`/product/${p.id}?name=${p.name}`)}
+      onClick={() =>
+        navigate(`/product/${p.id}?variant=${selectedVariant?.id || ""}`)
+      }
       className="cursor-pointer group"
     >
+      {/* IMAGE */}
       <div
         className="relative aspect-square bg-white mb-3 overflow-hidden"
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
       >
         <img
           src={images[currentIndex]}
-          className="w-full h-full object-contain p-4"
+          className="w-full h-full object-contain p-4 transition duration-300 group-hover:scale-105"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = logo;
+          }}
         />
-{/* 🔥 MOBILE IMAGE SLIDER (same as search page) */}
-{images.length > 1 && (
-  <div className="md:hidden absolute bottom-0 left-0 w-full px-3 pb-1">
-    <div className="w-full h-[2px] bg-gray-200 flex overflow-hidden">
-      {images.map((_, i) => (
-        <div
-          key={i}
-          className={`flex-1 ${
-            i === currentIndex ? "bg-gray-800" : "bg-gray-300"
-          }`}
-        />
-      ))}
-    </div>
-  </div>
-)}
+
+        {/* MOBILE BAR */}
+        {images.length > 1 && (
+          <div className="md:hidden absolute bottom-0 left-0 w-full px-3 pb-1">
+            <div className="w-full h-[2px] bg-gray-200 flex">
+              {images.map((_, i) => (
+                <div
+                  key={i}
+                  className={`flex-1 ${
+                    i === currentIndex ? "bg-gray-800" : "bg-gray-300"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* DESKTOP ARROWS */}
         {images.length > 1 && (
           <>
             <button
               onClick={prevImage}
               className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 
-           bg-white shadow-md w-8 h-12 items-center justify-center
-           opacity-0 group-hover:opacity-100 transition-opacity duration-200"    >
+              opacity-0 group-hover:opacity-100 transition
+              bg-white shadow-md w-8 h-12 items-center justify-center"
+            >
               <ChevronLeft size={18} />
             </button>
 
             <button
               onClick={nextImage}
-             className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 
-           bg-white shadow-md w-8 h-12 items-center justify-center
-           opacity-0 group-hover:opacity-100 transition-opacity duration-200"    >
+              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 
+              opacity-0 group-hover:opacity-100 transition
+              bg-white shadow-md w-8 h-12 items-center justify-center"
+            >
               <ChevronRight size={18} />
             </button>
           </>
         )}
       </div>
 
-      <p className="text-sm font-medium">{p.name}</p>
+      {/* INFO */}
+      <p className="text-sm font-medium line-clamp-2">{p.name}</p>
 
-      {ratings[v?.id] && <StarRating rating={ratings[v.id]} />}
+      {ratings?.[selectedVariant?.id] && (
+        <StarRating rating={ratings[selectedVariant.id]} />
+      )}
 
-      <p className="font-semibold mt-1">
-        ₹{v ? new Intl.NumberFormat("en-IN").format(v.price) : "N/A"}
-      </p>
+      {price && (
+        <div className="flex items-center justify-between gap-2 mt-1">
+          <p className="font-semibold text-gray-900">
+            ₹{Number(price).toLocaleString("en-IN")}
+          </p>
+
+          {(dimensions.length > 0 || colors.length > 0) && (
+            <select
+              value={selectedDimension || selectedColor || ""}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (dimensions.includes(value)) {
+                  setSelectedDimension(value);
+                  setSelectedColor(null);
+                } else if (colors.includes(value)) {
+                  setSelectedColor(value);
+                  setSelectedDimension(null);
+                }
+              }}
+              className="mt-2 text-xs border border-gray-300 rounded-full px-2 py-1 bg-white"
+            >
+              <option value="">
+                {dimensions.length > 0 && colors.length > 0
+                  ? "Select Option"
+                  : dimensions.length > 0
+                    ? "Select Dimension"
+                    : "Select Color"}
+              </option>
+
+              {[...dimensions, ...colors].map((item, i) => (
+                <option key={i} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -169,7 +263,7 @@ const CustomerProductList = () => {
       setProducts(data);
 
       data.forEach((p) =>
-        p.variants?.forEach((v) => fetchVariantReviews(v.id))
+        p.variants?.forEach((v) => fetchVariantReviews(v.id)),
       );
     } finally {
       setLoading(false);
@@ -180,8 +274,7 @@ const CustomerProductList = () => {
     try {
       const { data } = await api.get(`/Reviews/variant/${variantId}`);
       if (data?.length) {
-        const avg =
-          data.reduce((s, r) => s + (r.rating || 0), 0) / data.length;
+        const avg = data.reduce((s, r) => s + (r.rating || 0), 0) / data.length;
 
         setRatings((prev) => ({
           ...prev,
@@ -232,11 +325,11 @@ const CustomerProductList = () => {
             <SlidersHorizontal size={14} /> Sort & Filter
           </button>
         </div>
-         {/* SELECTED FILTERS */}
+        {/* SELECTED FILTERS */}
         <div className="flex gap-2 flex-wrap mb-6">
           {sortOrder && (
             <span className="text-xs bg-gray-100 px-3 py-1 rounded-full">
-              {sortOptions.find(s => s.value === sortOrder)?.label}
+              {sortOptions.find((s) => s.value === sortOrder)?.label}
             </span>
           )}
 
@@ -244,9 +337,9 @@ const CustomerProductList = () => {
             <span className="text-xs bg-gray-100 px-3 py-1 rounded-full">
               {
                 pricePresets.find(
-                  p =>
+                  (p) =>
                     p.range[0] === priceRange[0] &&
-                    p.range[1] === priceRange[1]
+                    p.range[1] === priceRange[1],
                 )?.label
               }
             </span>
@@ -269,7 +362,6 @@ const CustomerProductList = () => {
                 key={p.id}
                 p={p}
                 navigate={navigate}
-                getVariant={getVariant}
                 ratings={ratings}
               />
             ))}
@@ -289,7 +381,7 @@ const CustomerProductList = () => {
             }}
           />
 
- <div className="fixed right-0 top-0 h-full w-[320px] bg-white p-6 shadow-xl z-[110] overflow-y-auto">
+          <div className="fixed right-0 top-0 h-full w-[320px] bg-white p-6 shadow-xl z-[110] overflow-y-auto">
             <div className="flex justify-between mb-6">
               <h2 className="text-lg font-semibold">Sort & Filter</h2>
               <X onClick={() => setFilterOpen(false)} />
@@ -316,8 +408,7 @@ const CustomerProductList = () => {
                   key={p.label}
                   onClick={() => setTempPrice(p.range)}
                   className={`block mb-2 text-sm ${
-                    tempPrice[0] === p.range[0] &&
-                    tempPrice[1] === p.range[1]
+                    tempPrice[0] === p.range[0] && tempPrice[1] === p.range[1]
                       ? "font-semibold text-black"
                       : "text-gray-500"
                   }`}

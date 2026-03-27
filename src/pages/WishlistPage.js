@@ -34,8 +34,8 @@ const WishlistPage = () => {
     try {
       const response = await api.get(`/Wishlist/index/${userId}`);
       setWishlistItems(response.data);
-    } catch {}
-    finally {
+    } catch {
+    } finally {
       setLoading(false);
     }
   };
@@ -52,8 +52,8 @@ const WishlistPage = () => {
       });
       fetchWishlist(user.id);
       window.dispatchEvent(new Event("wishlistUpdated"));
-    } catch {}
-    finally {
+    } catch {
+    } finally {
       setLoading(false);
     }
   };
@@ -72,10 +72,32 @@ const WishlistPage = () => {
       fetchWishlist(user.id);
       window.dispatchEvent(new Event("cartUpdated"));
       window.dispatchEvent(new Event("wishlistUpdated"));
-    } catch {}
-    finally {
+    } catch {
+    } finally {
       setLoading(false);
     }
+  };
+
+  const renderSkeleton = () => {
+    return Array.from({ length: 8 }).map((_, index) => (
+      <div key={index} className="animate-pulse">
+        {/* IMAGE */}
+        <div className="bg-gray-200 aspect-square mb-3 rounded" />
+
+        {/* TEXT */}
+        <div className="h-3 bg-gray-200 rounded w-3/4 mb-2" />
+        <div className="h-3 bg-gray-200 rounded w-1/2 mb-3" />
+
+        {/* PRICE */}
+        <div className="h-4 bg-gray-300 rounded w-1/3 mb-3" />
+
+        {/* BUTTONS */}
+        <div className="flex gap-2">
+          <div className="flex-1 h-8 bg-gray-300 rounded" />
+          <div className="w-10 h-8 bg-gray-300 rounded" />
+        </div>
+      </div>
+    ));
   };
 
   return (
@@ -101,16 +123,14 @@ const WishlistPage = () => {
           </div>
         </div>
 
-        {/* EMPTY */}
-        {wishlistItems.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {renderSkeleton()}
+          </div>
+        ) : wishlistItems.length === 0 ? (
           <div className="text-center py-16">
-            <img
-              src={emptyWishlistImage}
-              className="w-40 mx-auto mb-6"
-            />
-            <h3 className="text-lg font-semibold">
-              Your wishlist is empty
-            </h3>
+            <img src={emptyWishlistImage} className="w-40 mx-auto mb-6" />
+            <h3 className="text-lg font-semibold">Your wishlist is empty</h3>
             <button
               onClick={() => navigate("/")}
               className="mt-4 bg-black text-white px-6 py-2"
@@ -123,7 +143,6 @@ const WishlistPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {wishlistItems.map((item) => (
               <div key={item.itemId} className="group">
-
                 {/* IMAGE */}
                 <div
                   className="relative bg-white-100 aspect-square mb-3 cursor-pointer"

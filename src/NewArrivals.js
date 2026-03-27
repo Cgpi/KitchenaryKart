@@ -4,37 +4,55 @@ import { useNavigate, Link } from "react-router-dom";
 import { useProductList } from "./hooks/useProductList";
 import { ProductCarousel } from "./components/common/ProductCarousel";
 import logo from "./images/piclogo.png";
-import { ChevronLeft, ChevronRight, ArrowRight, Sparkles, Eye } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  Sparkles,
+  Eye,
+} from "lucide-react";
 
 const NewArrivalProductList = () => {
   const navigate = useNavigate();
   const sliderRef = useRef(null);
-  
+
   // Use centralized hook
-  const { filteredProducts, loading, getFirstAvailableVariant } = useProductList(
-    "/product/new_arrivals"
-  );
+  const { filteredProducts, loading, getFirstAvailableVariant } =
+    useProductList("/product/new_arrivals");
 
   const handleProductClick = (product) => {
     navigate(`/product/${product.id}?name=${encodeURIComponent(product.name)}`);
   };
 
+  const getVariantOptions = (variants = []) => {
+    const otherDimensions = new Set();
+    const colors = new Set();
+
+    variants.forEach((v) => {
+      if (v.otherDimensions) otherDimensions.add(v.otherDimensions);
+      if (v.color) colors.add(v.color);
+    });
+
+    return {
+      otherDimensions: Array.from(otherDimensions),
+      colors: Array.from(colors),
+    };
+  };
+
   const renderProduct = (product, getVariant) => {
     const variant = getVariant(product.variants || []);
-    const imageUrl =
-      variant?.images?.[0]?.startsWith("https")
-        ? variant.images[0]
-        : variant?.images?.[0] || logo;
+    const imageUrl = variant?.images?.[0]?.startsWith("https")
+      ? variant.images[0]
+      : variant?.images?.[0] || logo;
     const price = variant?.price_with_gst || variant?.price || null;
     const subcatName =
-      product.subcategories?.length > 0
-        ? product.subcategories[0].name
-        : "";
+      product.subcategories?.length > 0 ? product.subcategories[0].name : "";
+    const { otherDimensions, colors } = getVariantOptions(
+      product.variants || [],
+    );
 
     return (
-      <div
-        className="group bg-white rounded-2xl overflow-hidden cursor-pointer relative border border-gray-100 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-lg hover:border-amber-200 flex flex-col h-[380px]"
-      >
+      <div className="group bg-white rounded-2xl overflow-hidden cursor-pointer relative border border-gray-100 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-lg hover:border-amber-200 flex flex-col h-[380px]">
         {/* New badge */}
         <div className="absolute top-2.5 left-2.5 z-10">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-black uppercase tracking-wide rounded-full shadow-md">
@@ -77,9 +95,38 @@ const NewArrivalProductList = () => {
             {product.name}
           </h3>
           {price && (
-            <p className="font-black text-[#B91C1C] text-sm sm:text-base mt-auto">
-              ₹{Number(price).toLocaleString("en-IN")}
-            </p>
+            <div className="flex items-center justify-between gap-2 mt-auto">
+              {/* Price */}
+              <p className="font-black text-[#B91C1C] text-sm sm:text-base">
+                ₹{Number(price).toLocaleString("en-IN")}
+              </p>
+
+              {(otherDimensions.length > 0 || colors.length > 0) && (
+                <select className="text-[10px] sm:text-xs border border-gray-200 rounded-full px-2 py-1 bg-white focus:outline-none focus:border-amber-400">
+                  <option value="">Options</option>
+
+                  {otherDimensions.length > 0 && (
+                    <optgroup>
+                      {otherDimensions.map((dim, i) => (
+                        <option key={`dim-${i}`} value={dim}>
+                          {dim}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+
+                  {colors.length > 0 && (
+                    <optgroup>
+                      {colors.map((color, i) => (
+                        <option key={`color-${i}`} value={color}>
+                          {color}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+              )}
+            </div>
           )}
         </div>
       </div>

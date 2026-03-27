@@ -6,52 +6,62 @@ import logo from "./images/piclogo.png";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 
-/* ⭐ PRODUCT CARD (MATCHES YOUR PREVIOUS UI) */
+/* ⭐ PRODUCT CARD */
 const ProductCard = ({ product, onClick, getVariant }) => {
-  const variant = getVariant(product.variants || []);
-  const images =
-    variant?.images?.length > 0
-      ? variant.images.map((img) =>
-          img.startsWith("https") ? img : img
-        )
-      : [logo];
+  const [selectedVariation, setSelectedVariation] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
+
+  const variants = product.variants || [];
+
+  // ✅ Extract options
+  const getVariantOptions = (variants = []) => {
+    const variations = new Set();
+    const colors = new Set();
+
+    variants.forEach((v) => {
+      if (v.otherDimensions) variations.add(v.otherDimensions);
+      if (v.color) colors.add(v.color);
+    });
+
+    return {
+      variations: Array.from(variations),
+      colors: Array.from(colors),
+    };
+  };
+
+  const { variations, colors } = getVariantOptions(variants);
+
+  // ✅ Dynamic variant selection
+  const variant =
+    variants.find(
+      (v) =>
+        (!selectedVariation || v.otherDimensions === selectedVariation) &&
+        (!selectedColor || v.color === selectedColor) &&
+        v.stock > 0,
+    ) || getVariant(variants);
+
+  const images = variant?.images?.length > 0 ? variant.images : [logo];
 
   const price = variant?.price_with_gst || variant?.price || null;
   const subcatName =
-    product.subcategories?.length > 0
-      ? product.subcategories[0].name
-      : "";
+    product.subcategories?.length > 0 ? product.subcategories[0].name : "";
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [lastIndex, setLastIndex] = useState(0);
   const startX = useRef(0);
+
+  // 🔁 Reset image when variant changes
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [variant]);
 
   const nextImage = (e) => {
     e.stopPropagation();
-    setCurrentIndex((prev) => {
-      const next = prev === images.length - 1 ? 0 : prev + 1;
-      setLastIndex(next);
-      return next;
-    });
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
   const prevImage = (e) => {
     e.stopPropagation();
-    setCurrentIndex((prev) => {
-      const next = prev === 0 ? images.length - 1 : prev - 1;
-      setLastIndex(next);
-      return next;
-    });
-  };
-
-  /* Hover */
-  const handleEnter = () => {
-    if (lastIndex !== 0) setCurrentIndex(lastIndex);
-    else if (images[1]) setCurrentIndex(1);
-  };
-
-  const handleLeave = () => {
-    setCurrentIndex(0);
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
   /* Swipe */
@@ -70,15 +80,10 @@ const ProductCard = ({ product, onClick, getVariant }) => {
   };
 
   return (
-    <div
-      onClick={onClick}
-      className="cursor-pointer group"
-    >
+    <div onClick={onClick} className="cursor-pointer group">
       {/* IMAGE */}
       <div
-        className="relative aspect-square bg-white-100 mb-3 overflow-hidden"
-        onMouseEnter={handleEnter}
-        onMouseLeave={handleLeave}
+        className="relative aspect-square bg-white mb-3 overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
       >
@@ -91,39 +96,19 @@ const ProductCard = ({ product, onClick, getVariant }) => {
           }}
         />
 
-        {/* MOBILE PROGRESS BAR */}
-        {images.length > 1 && (
-          <div className="md:hidden absolute bottom-0 left-0 w-full px-3 pb-[0px]">
-            <div className="w-full h-[2px] bg-gray-200 flex">
-              {images.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-full flex-1 transition-all duration-300 ${
-                    i === currentIndex ? "bg-gray-800" : "bg-gray-300"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* DESKTOP ARROWS */}
+        {/* Arrows */}
         {images.length > 1 && (
           <>
             <button
               onClick={prevImage}
-              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 
-              opacity-0 group-hover:opacity-100 transition
-              bg-white shadow-md w-8 h-12 items-center justify-center"
+              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md w-8 h-12 items-center justify-center"
             >
               <ChevronLeft size={18} />
             </button>
 
             <button
               onClick={nextImage}
-              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 
-              opacity-0 group-hover:opacity-100 transition
-              bg-white shadow-md w-8 h-12 items-center justify-center"
+              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md w-8 h-12 items-center justify-center"
             >
               <ChevronRight size={18} />
             </button>
@@ -138,28 +123,63 @@ const ProductCard = ({ product, onClick, getVariant }) => {
         </p>
       )}
 
-      <p className="text-sm font-medium line-clamp-2">
-        {product.name}
-      </p>
+      <p className="text-sm font-medium line-clamp-2">{product.name}</p>
 
       {price && (
-        <p className="font-semibold mt-1 text-gray-900">
-          ₹{Number(price).toLocaleString("en-IN")}
-        </p>
+        <div className="flex items-center justify-between gap-2 mt-1">
+          <p className="font-semibold text-gray-900">
+            ₹{Number(price).toLocaleString("en-IN")}
+          </p>
+
+          {/* ✅ WORKING DROPDOWN */}
+          {(variations.length > 0 || colors.length > 0) && (
+            <select
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (variations.includes(value)) setSelectedVariation(value);
+                if (colors.includes(value)) setSelectedColor(value);
+              }}
+              className="text-[10px] sm:text-xs border border-gray-200 rounded-full px-2 py-1 bg-white focus:outline-none focus:border-amber-400"
+            >
+              <option value="">
+                {variations.length > 0 && colors.length > 0
+                  ? "Select Option"
+                  : variations.length > 0
+                    ? "Select Variation"
+                    : "Select Color"}
+              </option>
+
+              {/* ✅ Variations */}
+              {variations.map((v, i) => (
+                <option key={`variation-${i}`} value={v}>
+                  {v}
+                </option>
+              ))}
+
+              {/* ✅ Colors */}
+              {colors.map((color, i) => (
+                <option key={`color-${i}`} value={color}>
+                  {color}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       )}
     </div>
   );
 };
 
+/* ⭐ MAIN PAGE */
 const MostsellingAll = () => {
   const navigate = useNavigate();
-  const { filteredProducts, loading, getFirstAvailableVariant } = useProductList(
-    "/product/most_selling",
-    "mostSelling"
-  );
+  const { filteredProducts, loading, getFirstAvailableVariant } =
+    useProductList("/product/most_selling", "mostSelling");
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   return (
@@ -208,8 +228,8 @@ const MostsellingAll = () => {
                 onClick={() =>
                   navigate(
                     `/product/${product.id}?name=${encodeURIComponent(
-                      product.name
-                    )}`
+                      product.name,
+                    )}`,
                   )
                 }
               />

@@ -794,7 +794,7 @@ const ProductDetails = () => {
 
                 {/* Main image frame */}
                 <div className="flex-1 min-w-0">
-                  <div className="relative bg-[#f3f4f6] rounded-none overflow-hidden border-0 shadow-none group">
+                  <div className="relative bg-white rounded-none overflow-hidden border-0 shadow-none group">
                     {/* Navigation arrows */}
                     {totalSlides > 1 && (
                       <>
@@ -987,7 +987,7 @@ const ProductDetails = () => {
               )}
 
               {/* Product name */}
-              <h1 className="font-display font-bold text-2xl md:text-3xl text-charcoal leading-tight mb-4">
+              <h1 className="md:text-xl text-charcoal leading-tight mb-4">
                 {product.name}
               </h1>
 
