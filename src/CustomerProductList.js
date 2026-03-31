@@ -5,6 +5,7 @@ import api from "./utils/api";
 import logo from "./images/piclogo.png";
 import { ProductSkeleton } from "./components/common/ProductSkeleton";
 import { SlidersHorizontal, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { StarRating } from "./components/common/StarRating";
 
 /* PRICE + SORT */
 const pricePresets = [
@@ -21,12 +22,8 @@ const sortOptions = [
   { value: "desc", label: "Price, high to low" },
 ];
 
-const StarRating = ({ rating }) => (
-  <div className="flex items-center gap-1 text-xs">
-    {"★".repeat(Math.round(rating))}
-    <span className="text-gray-400">{rating.toFixed(1)}</span>
-  </div>
-);
+const StarRatingInline = ({ rating }) =>
+  rating ? <StarRating rating={rating} size={12} className="mt-0.5" /> : null;
 
 const ProductCard = ({ p, navigate, ratings }) => {
   const [selectedDimension, setSelectedDimension] = useState("");
@@ -173,9 +170,7 @@ const ProductCard = ({ p, navigate, ratings }) => {
       {/* INFO */}
       <p className="text-sm font-medium line-clamp-2">{p.name}</p>
 
-      {ratings?.[selectedVariant?.id] && (
-        <StarRating rating={ratings[selectedVariant.id]} />
-      )}
+      <StarRatingInline rating={ratings?.[selectedVariant?.id]} />
 
       {price && (
         <div className="mt-1">

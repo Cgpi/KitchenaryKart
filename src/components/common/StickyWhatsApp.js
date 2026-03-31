@@ -1,7 +1,7 @@
 import React from "react";
 
 const StickyWhatsApp = () => {
-    const phoneNumber = "918806807419"; // ← replace with your WhatsApp number
+    const phoneNumber = "919890352455"; // ← replace with your WhatsApp number
     const message = "Hello, I need help with a product.";
 
     return (

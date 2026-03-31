@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "./utils/api";
 import logo from "./images/piclogo.png";
 import { ArrowRight } from "lucide-react";
+import { StarRating } from "./components/common/StarRating";
 
 /* ── Product card skeleton ──────────────────────────────────────────── */
 const CardSkeleton = () => (
@@ -24,6 +25,8 @@ const SubcategoryProductSection = ({
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [ratings, setRatings] = useState({});
 
   // ✅ store selected variants per product
   const [selectedVariants, setSelectedVariants] = useState({});
@@ -48,7 +51,12 @@ const SubcategoryProductSection = ({
           subcategoryImage,
         });
 
-        setProducts(prods || []);
+        const safeProducts = prods || [];
+        setProducts(safeProducts);
+
+        safeProducts.forEach((product) =>
+          product.variants?.forEach((v) => fetchVariantReviews(v.id)),
+        );
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -62,6 +70,22 @@ const SubcategoryProductSection = ({
 
   const getFirstAvailableVariant = (variants) =>
     variants.find((v) => v.stock > 0) || null;
+
+  const fetchVariantReviews = async (variantId) => {
+    try {
+      const { data } = await api.get(`/Reviews/variant/${variantId}`);
+      if (Array.isArray(data) && data.length) {
+        const avg =
+          data.reduce((s, r) => s + (r.rating || 0), 0) / data.length;
+        setRatings((prev) => ({
+          ...prev,
+          [variantId]: avg,
+        }));
+      }
+    } catch (e) {
+      // ignore rating errors
+    }
+  };
 
   // ✅ UPDATED → otherDimensions instead of size
   const getVariantOptions = (variants = []) => {
@@ -190,6 +214,7 @@ const SubcategoryProductSection = ({
                 : variant?.images?.[0] || logo;
 
               const price = variant?.price_with_gst || variant?.price || null;
+              const ratingValue = variant ? ratings?.[variant.id] : null;
 
               return (
                 <div
@@ -212,6 +237,12 @@ const SubcategoryProductSection = ({
                     <p className="text-sm font-medium line-clamp-2">
                       {product.name}
                     </p>
+
+                    {ratingValue && (
+                      <div className="mt-1">
+                        <StarRating rating={ratingValue} size={12} />
+                      </div>
+                    )}
 
                     {price && (
                       <div className="flex items-center justify-between gap-2 mt-auto">
