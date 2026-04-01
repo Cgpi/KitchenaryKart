@@ -197,72 +197,87 @@ useEffect(() => {
       >
         {/* ── Tab Bar — full viewport width, items share space equally ── */}
 {/* ── Tab Bar — full width, items shrink to fit ── */}
-
-  <ul className="flex items-center h-12 m-0 p-0 w-full overflow-x-auto whitespace-nowrap scrollbar-hide"
-  role="menubar"
-  aria-label="Product categories"
->
-  <li
-  className="flex-shrink-0 list-none h-full"
-  onMouseEnter={() => openMenu("new")}
-  onMouseLeave={scheduleClose}
->
-  <button
-    // onClick={() => {
-    //   setActiveCategory(null);
-    //   navigate("/new-arrivals");
-    // }}
-    className={`relative flex items-center justify-center gap-1 h-12 px-3 text-[11px] font-bold uppercase
-    tracking-wide transition-all duration-150
-    after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
-    ${activeCategory === "new" ? "after:w-full text-black" : "text-black/90 hover:text-black hover:after:w-full"}`}
+<div className="relative">
+  <ul
+    onWheel={(e) => {
+      e.currentTarget.scrollLeft += e.deltaY;
+    }}
+    style={{
+      scrollbarWidth: "thin", // Firefox
+    }}
+    className="flex items-center h-12 m-0 pl-6 pr-6 w-full overflow-x-auto whitespace-nowrap"
+    role="menubar"
+    aria-label="Product categories"
   >
-    NEW
-  </button>
-</li>
-  {categories.length > 0
-    ? categories.map((cat) => (
-        <li
-          key={cat.id}
-          className="flex-shrink-0 list-none h-full"
-          role="none"
-          onMouseEnter={() => openMenu(cat.id)}
-          onMouseLeave={scheduleClose}
-        >
-          <button
-            role="menuitem"
-            aria-expanded={activeCategory === cat.id}
-            aria-haspopup="true"
-            onClick={() => {
-              setActiveCategory(null);
-              navigate(`/category/${cat.id}/subcategories`);
-            }}
-            className={`relative flex items-center justify-center gap-1 h-12 px-2 text-[11px] font-bold uppercase
-             tracking-wide transition-all duration-150
-             after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
-             ${activeCategory === cat.id ? "after:w-full text-black" : "text-black/90 hover:text-black hover:after:w-full"}`}
+    {/* NEW TAB */}
+    <li
+      className="flex-shrink-0 list-none h-full"
+      onMouseEnter={() => openMenu("new")}
+      onMouseLeave={scheduleClose}
+    >
+      <button
+        className={`relative flex items-center justify-center gap-1 h-12 px-3 text-[11px] font-bold uppercase
+        tracking-wide transition-all duration-150
+        after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
+        ${
+          activeCategory === "new"
+            ? "after:w-full text-black"
+            : "text-black/90 hover:text-black hover:after:w-full"
+        }`}
+      >
+        NEW
+      </button>
+    </li>
+
+    {/* CATEGORY LIST */}
+    {categories.length > 0
+      ? categories.map((cat) => (
+          <li
+            key={cat.id}
+            className="flex-shrink-0 list-none h-full"
+            role="none"
+            onMouseEnter={() => openMenu(cat.id)}
+            onMouseLeave={scheduleClose}
           >
-            <span className="truncate">{cat.name}</span>
-            <ChevronDown
-              size={10}
-              className={`flex-shrink-0 transition-transform duration-200 ${
-                activeCategory === cat.id ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-        </li>
-      ))
-    : categoriesLoading
-    ? Array.from({ length: 9 }).map((_, i) => (
-        <li
-          key={`nav-skeleton-${i}`}
-          className="flex-shrink list-none h-full flex items-center justify-center"
-        >
-          <div className="h-3 w-16 sm:w-20 bg-white/20 rounded animate-pulse" />
-        </li>
-      ))
-    : null}
-</ul>
+            <button
+              role="menuitem"
+              aria-expanded={activeCategory === cat.id}
+              aria-haspopup="true"
+              onClick={() => {
+                setActiveCategory(null);
+                navigate(`/category/${cat.id}/subcategories`);
+              }}
+              className={`relative flex items-center justify-center gap-1 h-12 px-2 text-[11px] font-bold uppercase
+               tracking-wide transition-all duration-150
+               after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
+               ${
+                 activeCategory === cat.id
+                   ? "after:w-full text-black"
+                   : "text-black/90 hover:text-black hover:after:w-full"
+               }`}
+            >
+              <span className="truncate">{cat.name}</span>
+              <ChevronDown
+                size={10}
+                className={`flex-shrink-0 transition-transform duration-200 ${
+                  activeCategory === cat.id ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          </li>
+        ))
+      : categoriesLoading
+      ? Array.from({ length: 9 }).map((_, i) => (
+          <li
+            key={`nav-skeleton-${i}`}
+            className="flex-shrink list-none h-full flex items-center justify-center"
+          >
+            <div className="h-3 w-16 sm:w-20 bg-white/20 rounded animate-pulse" />
+          </li>
+        ))
+      : null}
+  </ul>
+</div>
 
         {/* ══ MEGA MENU PANEL ══════════════════════════════════════
             Rendered as a sibling of the tab bar — NOT inside the
