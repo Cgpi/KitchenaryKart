@@ -115,7 +115,7 @@ const App = () => {
           )}
         />
 
-        <ProductNotification />
+        {/* <ProductNotification /> */}
         <StickyWhatsApp />
         <CartReminderPopup />
         <AppWrapper />

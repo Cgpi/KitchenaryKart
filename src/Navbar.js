@@ -1,8 +1,19 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import api from "./utils/api";
-import { getCachedCategories, setCachedCategories, processCategories } from "./utils/categoriesCache";
+import {
+  getCachedCategories,
+  setCachedCategories,
+  processCategories,
+} from "./utils/categoriesCache";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChevronDown, X, Menu, ChevronRight, Grid, ArrowRight } from "lucide-react";
+import {
+  ChevronDown,
+  X,
+  Menu,
+  ChevronRight,
+  Grid,
+  ArrowRight,
+} from "lucide-react";
 import logo from "./images/piclogo.png";
 
 /** Split a flat array into balanced columns (max 3) */
@@ -30,32 +41,35 @@ function gridColsClass(count) {
 function Navbar() {
   const NEW_CACHE_KEY = "new_arrivals_cache";
 
-const getCachedNewArrivals = () => {
-  try {
-    return JSON.parse(localStorage.getItem(NEW_CACHE_KEY)) || [];
-  } catch {
-    return [];
-  }
-};
-  const [categories, setCategories] = useState(() => getCachedCategories() || []);
-  const [categoriesLoading, setCategoriesLoading] = useState(() => !(getCachedCategories()?.length > 0));
+  const getCachedNewArrivals = () => {
+    try {
+      return JSON.parse(localStorage.getItem(NEW_CACHE_KEY)) || [];
+    } catch {
+      return [];
+    }
+  };
+  const [categories, setCategories] = useState(
+    () => getCachedCategories() || [],
+  );
+  const [categoriesLoading, setCategoriesLoading] = useState(
+    () => !(getCachedCategories()?.length > 0),
+  );
   const [activeCategory, setActiveCategory] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(null);
- const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 990);
-const [newProducts, setNewProducts] = useState(() => getCachedNewArrivals());
-const [newSection, setNewSection] = useState(null);
-const [newLoading, setNewLoading] = useState(
-  () => getCachedNewArrivals().length === 0
-);
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 990);
+  const [newProducts, setNewProducts] = useState(() => getCachedNewArrivals());
+  const [newSection, setNewSection] = useState(null);
+  const [newLoading, setNewLoading] = useState(
+    () => getCachedNewArrivals().length === 0,
+  );
   const closeTimer = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-
-const setCachedNewArrivals = (products) => {
-  localStorage.setItem(NEW_CACHE_KEY, JSON.stringify(products));
-};
+  const setCachedNewArrivals = (products) => {
+    localStorage.setItem(NEW_CACHE_KEY, JSON.stringify(products));
+  };
   // ── Resize listener ──────────────────────────────────────────────
   useEffect(() => {
     const onResize = () => setIsDesktop(window.innerWidth >= 990);
@@ -64,67 +78,67 @@ const setCachedNewArrivals = (products) => {
   }, []);
 
   // ── Fetch Categories — show cached immediately, then refresh in background ─
- // ── Fetch Categories — show cached immediately, then refresh in background ─
-useEffect(() => {
-  async function fetchCategories() {
-    const cached = getCachedCategories() || [];
-    if (cached.length > 0) {
-      setCategories(cached); // show instantly
-      setCategoriesLoading(false);
-    }
-
-    try {
-      const res = await api.get(`/category/index`);
-      const cats = processCategories(res.data);
-
-      // Only update if there is any new category
-      const cachedIds = cached.map((c) => c.id);
-      const hasNew = cats.some((c) => !cachedIds.includes(c.id));
-
-      if (hasNew || cached.length === 0) {
-        setCategories(cats);
-        setCachedCategories(res.data);
+  // ── Fetch Categories — show cached immediately, then refresh in background ─
+  useEffect(() => {
+    async function fetchCategories() {
+      const cached = getCachedCategories() || [];
+      if (cached.length > 0) {
+        setCategories(cached); // show instantly
+        setCategoriesLoading(false);
       }
-    } catch (e) {
-      console.error("Failed to fetch categories", e);
-      // keep cached if fetch fails
-    } finally {
-      setCategoriesLoading(false);
-    }
-  }
 
-  fetchCategories();
-}, []);
-useEffect(() => {
-  if (activeCategory !== "new") return;
+      try {
+        const res = await api.get(`/category/index`);
+        const cats = processCategories(res.data);
 
-  let ignore = false;
+        // Only update if there is any new category
+        const cachedIds = cached.map((c) => c.id);
+        const hasNew = cats.some((c) => !cachedIds.includes(c.id));
 
-  async function fetchNewArrivals() {
-    try {
-      setNewLoading(true); // ✅ show skeleton ONLY if needed
-
-      const res = await api.get("/product/new_arrivals");
-
-      if (!ignore && res.data) {
-        setNewProducts(res.data);
-        setCachedNewArrivals(res.data);
+        if (hasNew || cached.length === 0) {
+          setCategories(cats);
+          setCachedCategories(res.data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch categories", e);
+        // keep cached if fetch fails
+      } finally {
+        setCategoriesLoading(false);
       }
-    } catch (e) {
-      console.error("Failed to fetch new arrivals", e);
-    } finally {
-      if (!ignore) setNewLoading(false);
     }
-  }
 
-  fetchNewArrivals();
+    fetchCategories();
+  }, []);
+  useEffect(() => {
+    if (activeCategory !== "new") return;
 
-  return () => {
-    ignore = true;
-  };
-}, [activeCategory]);
+    let ignore = false;
 
-// ── Close on route change ────────────────────────────────────────
+    async function fetchNewArrivals() {
+      try {
+        setNewLoading(true); // ✅ show skeleton ONLY if needed
+
+        const res = await api.get("/product/new_arrivals");
+
+        if (!ignore && res.data) {
+          setNewProducts(res.data);
+          setCachedNewArrivals(res.data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch new arrivals", e);
+      } finally {
+        if (!ignore) setNewLoading(false);
+      }
+    }
+
+    fetchNewArrivals();
+
+    return () => {
+      ignore = true;
+    };
+  }, [activeCategory]);
+
+  // ── Close on route change ────────────────────────────────────────
   useEffect(() => {
     setMobileOpen(false);
     setMobileExpanded(null);
@@ -157,12 +171,16 @@ useEffect(() => {
       setActiveCategory(null);
       setMobileOpen(false);
       if (subsubcategories && subsubcategories.length > 0) {
-        navigate(`/subcategory/category/${categoryId}/subcategory/${subcategoryId}`);
+        navigate(
+          `/subcategory/category/${categoryId}/subcategory/${subcategoryId}`,
+        );
       } else {
-        navigate(`/products/category/${categoryId}/subcategory/${subcategoryId}`);
+        navigate(
+          `/products/category/${categoryId}/subcategory/${subcategoryId}`,
+        );
       }
     },
-    [navigate]
+    [navigate],
   );
 
   // ── Hover helpers ────────────────────────────────────────────────
@@ -180,10 +198,10 @@ useEffect(() => {
   }, []);
 
   const activeData = categories.find((c) => c.id === activeCategory) || null;
- const megaColumns =
-  activeCategory === "new" || !activeData
-    ? []
-    : splitColumns(activeData.subcategories || []);
+  const megaColumns =
+    activeCategory === "new" || !activeData
+      ? []
+      : splitColumns(activeData.subcategories || []);
 
   return (
     <>
@@ -196,308 +214,329 @@ useEffect(() => {
         className="relative bg-white sticky top-14 sm:top-16 z-50"
       >
         {/* ── Tab Bar — full viewport width, items share space equally ── */}
-{/* ── Tab Bar — full width, items shrink to fit ── */}
-
-  <ul className="flex items-center h-12 m-0 p-0 w-full overflow-x-auto whitespace-nowrap scrollbar-hide"
-  role="menubar"
-  aria-label="Product categories"
->
-  <li
-  className="flex-shrink-0 list-none h-full"
-  onMouseEnter={() => openMenu("new")}
-  onMouseLeave={scheduleClose}
->
-  <button
-    // onClick={() => {
-    //   setActiveCategory(null);
-    //   navigate("/new-arrivals");
-    // }}
-    className={`relative flex items-center justify-center gap-1 h-12 px-3 text-[11px] font-bold uppercase
-    tracking-wide transition-all duration-150
-    after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
-    ${activeCategory === "new" ? "after:w-full text-black" : "text-black/90 hover:text-black hover:after:w-full"}`}
-  >
-    NEW
-  </button>
-</li>
-  {categories.length > 0
-    ? categories.map((cat) => (
-        <li
-          key={cat.id}
-          className="flex-shrink-0 list-none h-full"
-          role="none"
-          onMouseEnter={() => openMenu(cat.id)}
-          onMouseLeave={scheduleClose}
-        >
-          <button
-            role="menuitem"
-            aria-expanded={activeCategory === cat.id}
-            aria-haspopup="true"
-            onClick={() => {
-              setActiveCategory(null);
-              navigate(`/category/${cat.id}/subcategories`);
+        {/* ── Tab Bar — full width, items shrink to fit ── */}
+        <div className="relative">
+          <ul
+            onWheel={(e) => {
+              e.currentTarget.scrollLeft += e.deltaY;
             }}
-            className={`relative flex items-center justify-center gap-1 h-12 px-2 text-[11px] font-bold uppercase
-             tracking-wide transition-all duration-150
-             after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
-             ${activeCategory === cat.id ? "after:w-full text-black" : "text-black/90 hover:text-black hover:after:w-full"}`}
+            style={{
+              scrollbarWidth: "thin", // Firefox
+            }}
+            className="flex items-center h-12 m-0 pl-6 pr-6 w-full overflow-x-auto whitespace-nowrap"
+            role="menubar"
+            aria-label="Product categories"
           >
-            <span className="truncate">{cat.name}</span>
-            <ChevronDown
-              size={10}
-              className={`flex-shrink-0 transition-transform duration-200 ${
-                activeCategory === cat.id ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-        </li>
-      ))
-    : categoriesLoading
-    ? Array.from({ length: 9 }).map((_, i) => (
-        <li
-          key={`nav-skeleton-${i}`}
-          className="flex-shrink list-none h-full flex items-center justify-center"
-        >
-          <div className="h-3 w-16 sm:w-20 bg-white/20 rounded animate-pulse" />
-        </li>
-      ))
-    : null}
-</ul>
+            {/* NEW TAB */}
+            <li
+              className="flex-shrink-0 list-none h-full"
+              onMouseEnter={() => openMenu("new")}
+              onMouseLeave={scheduleClose}
+            >
+              <button
+                className={`relative flex items-center justify-center gap-1 h-12 px-3 text-[11px] font-bold uppercase
+        tracking-wide transition-all duration-150
+        after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
+        ${
+          activeCategory === "new"
+            ? "after:w-full text-black"
+            : "text-black/90 hover:text-black hover:after:w-full"
+        }`}
+              >
+                NEW
+              </button>
+            </li>
+
+            {/* CATEGORY LIST */}
+            {categories.length > 0
+              ? categories.map((cat) => (
+                  <li
+                    key={cat.id}
+                    className="flex-shrink-0 list-none h-full"
+                    role="none"
+                    onMouseEnter={() => openMenu(cat.id)}
+                    onMouseLeave={scheduleClose}
+                  >
+                    <button
+                      role="menuitem"
+                      aria-expanded={activeCategory === cat.id}
+                      aria-haspopup="true"
+                      onClick={() => {
+                        setActiveCategory(null);
+                        navigate(`/category/${cat.id}/subcategories`);
+                      }}
+                      className={`relative flex items-center justify-center gap-1 h-12 px-2 text-[11px] font-bold uppercase
+               tracking-wide transition-all duration-150
+               after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300
+               ${
+                 activeCategory === cat.id
+                   ? "after:w-full text-black"
+                   : "text-black/90 hover:text-black hover:after:w-full"
+               }`}
+                    >
+                      <span className="truncate">{cat.name}</span>
+                      <ChevronDown
+                        size={10}
+                        className={`flex-shrink-0 transition-transform duration-200 ${
+                          activeCategory === cat.id ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                  </li>
+                ))
+              : categoriesLoading
+                ? Array.from({ length: 9 }).map((_, i) => (
+                    <li
+                      key={`nav-skeleton-${i}`}
+                      className="flex-shrink list-none h-full flex items-center justify-center"
+                    >
+                      <div className="h-3 w-16 sm:w-20 bg-white/20 rounded animate-pulse" />
+                    </li>
+                  ))
+                : null}
+          </ul>
+        </div>
 
         {/* ══ MEGA MENU PANEL ══════════════════════════════════════
             Rendered as a sibling of the tab bar — NOT inside the
             overflow-x-auto container. Positioned absolute relative
             to the sticky <nav>, spans full nav width.
         ════════════════════════════════════════════════════════════ */}
-       {(activeData || activeCategory === "new") && (
-  <nav
-    onMouseEnter={cancelClose}
-    onMouseLeave={scheduleClose}
-    aria-label={
-      activeCategory === "new"
-        ? "New arrivals"
-        : `${activeData?.name} — subcategories`
-    }
-    className="absolute top-full left-0 right-0 bg-white z-[9999] flex flex-col"
-    style={{
-      height: "360px",
-      boxShadow: "0 32px 80px rgba(0,0,0,0.13), 0 8px 24px rgba(0,0,0,0.08)",
-      animation: "slideDown 0.18s cubic-bezier(0.16,1,0.3,1) forwards",
-    }}
-  >
-    {activeCategory === "new" ? (
-      // ✅ NEW TAB UI
-      <div className="container-main h-full flex items-start gap-6 py-6">
-        {/* LEFT BANNER */}
-        <div className="w-56 h-47  overflow-hidden relative">
-          <img
-            src={newProducts?.[0]?.variants?.[0]?.images?.[0] || logo}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="absolute bottom-4 left-4 text-white">
-          
-            <h2 className="text-xs opacity-80">Latest collections</h2>
-          </div>
-        </div>
-
-        {/* RIGHT LINKS */}
-        <div className="flex-1 grid grid-cols-2 gap-6">
-           {/* Shop By Category */}
-          <div>
-            <h3 className="text-sm font-bold mb-3">Shop By Category</h3>
-            <ul className="space-y-2 text-[13px]">
-              {categories.length > 0 ? (
-                categories.map((cat) => (
-                  <li key={cat.id}>
-                    <button
-                      onClick={() =>
-                        navigate(`/category/${cat.id}/subcategories`)
-                      }
-                      className="text-left hover:text-black/80 font-medium"
-                    >
-                      {cat.name}
-                    </button>
-                  </li>
-                ))
-              ) : (
-                <li className="text-gray-400 text-xs">Loading categories...</li>
-              )}
-            </ul>
-          </div>
-          {/* Featured */}
-          <div>
-            <h3 className="text-sm font-bold mb-3">Featured</h3>
-            <ul className="space-y-2 text-[13px]">
-              <li>
-                <button
-                  onClick={() => navigate("/new-arrivals")}
-                  className="text-left hover:text-black/80 font-medium"
-                >
-                  Latest Drops
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => navigate("/most-selling-all")}
-                  className="text-left hover:text-black/80 font-medium"
-                >
-                  Best Sellers
-                </button>
-              </li>
-            </ul>
-          </div>
-
-         
-        </div>
-      </div>
-    ) : (
-
-  // ✅ YOUR EXISTING MEGA MENU (PASTE EVERYTHING BELOW AS IT IS)
-  <div className="container-main flex-1 flex gap-0 min-h-0 py-6">
-
-              <div className="w-64 flex-shrink-0 pr-6 border-r border-stone-100 flex flex-col justify-between">
-  <div>
-    <button
-      onClick={() => {
-        setActiveCategory(null);
-        navigate(`/category/${activeData.id}/subcategories`);
-      }}
-      className="block w-full text-left group/img mb-4"
-    >
-      {/* IMAGE CARD */}
-      <div className="w-full h-56 overflow-hidden relative">
-        <img
-          src={activeData.image || logo}
-          key={activeData?.id}
-          alt={activeData.name}
-          loading="lazy"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = logo;
-          }}
-          className="w-full h-full object-cover
-                     group-hover/img:scale-110 transition-transform duration-500"
-        />
-
-        {/* GRADIENT OVERLAY */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-
-        {/* TEXT ON IMAGE */}
-        <div className="absolute bottom-3 left-3 right-3">
-          {/* <h2 className="text-white text-lg font-bold leading-tight">
-            {activeData.name}
-          </h2> */}
-          <p className="text-white/80 text-xs mt-1">
-            {activeData.subcategories?.length || 0} categories
-          </p>
-        </div>
-      </div>
-    </button>
-  </div>
-
-  {/* SHOP ALL BUTTON */}
-  <button
-    onClick={() => {
-      setActiveCategory(null);
-      navigate(`/category/${activeData.id}/subcategories`);
-    }}
-    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold
-               text-white bg-black rounded-xl
-               hover:bg-gray-800 transition-all duration-200 w-full justify-center"
-  >
-    Shop All
-    <ArrowRight size={14} />
-  </button>
-</div>
-
-              {/* RIGHT PANEL — scrollable subcategory list ──────── */}
-              <div className="flex-1 pl-6 min-w-0 flex flex-col min-h-0">
-                {/* Fixed header row */}
-                <div className="flex items-center gap-3 mb-3 flex-shrink-0">
-                  <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.12em]">
-                    Browse {activeData.name}
-                  </h3>
-                  <div className="flex-1 h-px bg-stone-100" />
-                  <span className="text-[10px] font-semibold text-stone-300">
-                    {activeData.subcategories?.length || 0} categories
-                  </span>
+        {(activeData || activeCategory === "new") && (
+          <nav
+            onMouseEnter={cancelClose}
+            onMouseLeave={scheduleClose}
+            aria-label={
+              activeCategory === "new"
+                ? "New arrivals"
+                : `${activeData?.name} — subcategories`
+            }
+            className="absolute top-full left-0 right-0 bg-white z-[9999] flex flex-col"
+            style={{
+              height: "360px",
+              boxShadow:
+                "0 32px 80px rgba(0,0,0,0.13), 0 8px 24px rgba(0,0,0,0.08)",
+              animation: "slideDown 0.18s cubic-bezier(0.16,1,0.3,1) forwards",
+            }}
+          >
+            {activeCategory === "new" ? (
+              // ✅ NEW TAB UI
+              <div className="container-main h-full flex items-start gap-6 py-6">
+                {/* LEFT BANNER */}
+                <div className="w-56 h-47  overflow-hidden relative">
+                  <img
+                    src={newProducts?.[0]?.variants?.[0]?.images?.[0] || logo}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40" />
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h2 className="text-xs opacity-80">Latest collections</h2>
+                  </div>
                 </div>
 
-                {/* Scrollable area */}
-                <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0">
-                  {megaColumns.length > 0 ? (
-                    <div className={`grid gap-x-3 gap-y-0 ${gridColsClass(megaColumns.length)}`}>
-                      {megaColumns.map((col) => (
-                        <ul key={col[0]?.id ?? col.length} className="space-y-0 m-0 p-0">
-                          {col.map((sub) => (
-                            <li key={sub.id} className="list-none">
-                              <button
-                                onClick={() =>
-                                  handleSubcategoryClick(
-                                    activeData.id,
-                                    sub.id,
-                                    sub.subsubcategories
-                                  )
-                                }
-                                className="w-full text-left flex items-center justify-between
+                {/* RIGHT LINKS */}
+                <div className="flex-1 grid grid-cols-2 gap-6">
+                  {/* Shop By Category */}
+                  <div>
+                    <h3 className="text-sm font-bold mb-3">Shop By Category</h3>
+                    <ul className="space-y-2 text-[13px]">
+                      {categories.length > 0 ? (
+                        categories.map((cat) => (
+                          <li key={cat.id}>
+                            <button
+                              onClick={() =>
+                                navigate(`/category/${cat.id}/subcategories`)
+                              }
+                              className="text-left hover:text-black/80 font-medium"
+                            >
+                              {cat.name}
+                            </button>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-gray-400 text-xs">
+                          Loading categories...
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                  {/* Featured */}
+                  <div>
+                    <h3 className="text-sm font-bold mb-3">Featured</h3>
+                    <ul className="space-y-2 text-[13px]">
+                      <li>
+                        <button
+                          onClick={() => navigate("/new-arrivals")}
+                          className="text-left hover:text-black/80 font-medium"
+                        >
+                          Latest Drops
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          onClick={() => navigate("/most-selling-all")}
+                          className="text-left hover:text-black/80 font-medium"
+                        >
+                          Best Sellers
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // ✅ YOUR EXISTING MEGA MENU (PASTE EVERYTHING BELOW AS IT IS)
+              <div className="container-main flex-1 flex gap-0 min-h-0 py-6">
+                <div className="w-64 flex-shrink-0 pr-6 border-r border-stone-100 flex flex-col justify-between">
+                  <div>
+                    <button
+                      onClick={() => {
+                        setActiveCategory(null);
+                        navigate(`/category/${activeData.id}/subcategories`);
+                      }}
+                      className="block w-full text-left group/img mb-4"
+                    >
+                      {/* IMAGE CARD */}
+                      <div className="w-full h-56 overflow-hidden relative">
+                        <img
+                          src={activeData.image || logo}
+                          key={activeData?.id}
+                          alt={activeData.name}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = logo;
+                          }}
+                          className="w-full h-full object-cover
+                     group-hover/img:scale-110 transition-transform duration-500"
+                        />
+
+                        {/* GRADIENT OVERLAY */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+
+                        {/* TEXT ON IMAGE */}
+                        <div className="absolute bottom-3 left-3 right-3">
+                          {/* <h2 className="text-white text-lg font-bold leading-tight">
+            {activeData.name}
+          </h2> */}
+                          <p className="text-white/80 text-xs mt-1">
+                            {activeData.subcategories?.length || 0} categories
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* SHOP ALL BUTTON */}
+                  <button
+                    onClick={() => {
+                      setActiveCategory(null);
+                      navigate(`/category/${activeData.id}/subcategories`);
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold
+               text-white bg-black rounded-xl
+               hover:bg-gray-800 transition-all duration-200 w-full justify-center"
+                  >
+                    Shop All
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+
+                {/* RIGHT PANEL — scrollable subcategory list ──────── */}
+                <div className="flex-1 pl-6 min-w-0 flex flex-col min-h-0">
+                  {/* Fixed header row */}
+                  <div className="flex items-center gap-3 mb-3 flex-shrink-0">
+                    <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.12em]">
+                      Browse {activeData.name}
+                    </h3>
+                    <div className="flex-1 h-px bg-stone-100" />
+                    <span className="text-[10px] font-semibold text-stone-300">
+                      {activeData.subcategories?.length || 0} categories
+                    </span>
+                  </div>
+
+                  {/* Scrollable area */}
+                  <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0">
+                    {megaColumns.length > 0 ? (
+                      <div
+                        className={`grid gap-x-3 gap-y-0 ${gridColsClass(megaColumns.length)}`}
+                      >
+                        {megaColumns.map((col) => (
+                          <ul
+                            key={col[0]?.id ?? col.length}
+                            className="space-y-0 m-0 p-0"
+                          >
+                            {col.map((sub) => (
+                              <li key={sub.id} className="list-none">
+                                <button
+                                  onClick={() =>
+                                    handleSubcategoryClick(
+                                      activeData.id,
+                                      sub.id,
+                                      sub.subsubcategories,
+                                    )
+                                  }
+                                  className="w-full text-left flex items-center justify-between
                                            py-[6px] px-2.5 rounded-lg text-[12.5px] font-medium
                                            text-stone-700 hover:text-brand hover:bg-gray-100
                                            transition-all duration-100 group/sub"
-                              >
-                                <span className="truncate leading-snug pr-1">{sub.name}</span>
-                                {sub.subsubcategories && sub.subsubcategories.length > 0 ? (
-                                  <ChevronRight
-                                    size={11}
-                                    className="flex-shrink-0 text-stone-300 group-hover/sub:text-brand
+                                >
+                                  <span className="truncate leading-snug pr-1">
+                                    {sub.name}
+                                  </span>
+                                  {sub.subsubcategories &&
+                                  sub.subsubcategories.length > 0 ? (
+                                    <ChevronRight
+                                      size={11}
+                                      className="flex-shrink-0 text-stone-300 group-hover/sub:text-brand
                                                transition-colors ml-1"
-                                  />
-                                ) : (
-                                  <ArrowRight
-                                    size={10}
-                                    className="flex-shrink-0 opacity-0 group-hover/sub:opacity-40
+                                    />
+                                  ) : (
+                                    <ArrowRight
+                                      size={10}
+                                      className="flex-shrink-0 opacity-0 group-hover/sub:opacity-40
                                                text-brand transition-opacity ml-1"
-                                  />
-                                )}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-stone-400 text-sm py-4">
-                      No subcategories available.
-                    </p>
-                  )}
+                                    />
+                                  )}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-stone-400 text-sm py-4">
+                        No subcategories available.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
-                       </div>
-)}
+            )}
             {/* ── Bottom strip — always visible at fixed bottom ─── */}
-          {activeCategory !== "new" && activeData && (
-  <div className="flex-shrink-0 border-t border-stone-100 bg-stone-50/70 py-2">
-    <div className="container-main flex items-center justify-between">
-      <p className="text-[11px] text-stone-400 font-body">
-        {activeData.subcategories?.length || 0} subcategories in{" "}
-        <span className="font-semibold text-stone-500">
-          {activeData.name}
-        </span>
-      </p>
-      <button
-        onClick={() => {
-          setActiveCategory(null);
-          navigate(`/category/${activeData.id}/subcategories`);
-        }}
-        className="inline-flex items-center gap-1 text-[11px] font-bold text-brand
+            {activeCategory !== "new" && activeData && (
+              <div className="flex-shrink-0 border-t border-stone-100 bg-stone-50/70 py-2">
+                <div className="container-main flex items-center justify-between">
+                  <p className="text-[11px] text-stone-400 font-body">
+                    {activeData.subcategories?.length || 0} subcategories in{" "}
+                    <span className="font-semibold text-stone-500">
+                      {activeData.name}
+                    </span>
+                  </p>
+                  <button
+                    onClick={() => {
+                      setActiveCategory(null);
+                      navigate(`/category/${activeData.id}/subcategories`);
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-brand
                    hover:underline hover:underline-offset-2 transition-all"
-      >
-        View all {activeData.name}
-        <ArrowRight size={10} />
-      </button>
-    </div>
-  </div>
-)}
+                  >
+                    View all {activeData.name}
+                    <ArrowRight size={10} />
+                  </button>
+                </div>
+              </div>
+            )}
           </nav>
         )}
       </nav>
@@ -508,30 +547,29 @@ useEffect(() => {
       <nav
         aria-label="Category navigation"
         style={{ display: isDesktop ? "none" : "block" }}
-       className="bg-white border-b border-stone-200 sticky top-14 sm:top-16 z-40"
+        className="bg-white border-b border-stone-200 sticky top-14 sm:top-16 z-40"
       >
         <div className="container-main">
           <div className="flex items-center justify-between h-12">
-  {/* LEFT → Browse */}
-  <button
-    onClick={() => setMobileOpen(true)}
-    className="flex items-center gap-2 px-4 py-2 bg-gray text-black text-sm
+            {/* LEFT → Browse */}
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gray text-black text-sm
                font-semibold rounded-lg hover:bg-black/80 transition"
-    aria-label="Open categories menu"
-  >
-    <Menu size={25} />
-   
-  </button>
+              aria-label="Open categories menu"
+            >
+              <Menu size={25} />
+            </button>
 
-  {/* RIGHT → All Categories */}
-  <button
-    onClick={() => navigate("/all-subcategories")}
-    className="flex items-center gap-2 text-black text-sm font-semibold"
-  >
-    <Grid size={15} />
-    All Categories
-  </button>
-</div>
+            {/* RIGHT → All Categories */}
+            <button
+              onClick={() => navigate("/all-subcategories")}
+              className="flex items-center gap-2 text-black text-sm font-semibold"
+            >
+              <Grid size={15} />
+              All Categories
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -560,10 +598,12 @@ useEffect(() => {
             style={{ position: "relative" }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 bg-brand
-                            border-b border-white/20 flex-shrink-0">
+            <div
+              className="flex items-center justify-between px-5 py-4 bg-brand
+                            border-b border-white/20 flex-shrink-0"
+            >
               <span className="text-white font-display font-bold text-lg">
-               Kitchenary Kart
+                Kitchenary Kart
               </span>
               <button
                 onClick={() => setMobileOpen(false)}
@@ -578,133 +618,145 @@ useEffect(() => {
             {/* Category accordion list */}
             <div className="flex-1 overflow-y-auto">
               {/* 🔥 NEW ARRIVALS ACCORDION */}
-{/* 🔴 NEW ACCORDION HEADER */}
-<div className="border-b border-stone-100">
-  <button
-    onClick={() =>
-      setMobileExpanded(mobileExpanded === "new" ? null : "new")
-    }
-    className="w-full flex items-center justify-between px-5 py-3.5
+              {/* 🔴 NEW ACCORDION HEADER */}
+              <div className="border-b border-stone-100">
+                <button
+                  onClick={() =>
+                    setMobileExpanded(mobileExpanded === "new" ? null : "new")
+                  }
+                  className="w-full flex items-center justify-between px-5 py-3.5
                text-sm font-semibold text-charcoal hover:bg-stone-50
                transition-colors text-left"
-  >
-    <span>New</span>
-    <ChevronDown
-      size={15}
-      className={`transition-transform duration-200 ${
-        mobileExpanded === "new"
-          ? "rotate-180 text-brand"
-          : "text-stone-400"
-      }`}
-    />
-  </button>
+                >
+                  <span>New</span>
+                  <ChevronDown
+                    size={15}
+                    className={`transition-transform duration-200 ${
+                      mobileExpanded === "new"
+                        ? "rotate-180 text-brand"
+                        : "text-stone-400"
+                    }`}
+                  />
+                </button>
 
-  {/* 🔽 EXPANDED CONTENT */}
-  {mobileExpanded === "new" && (
-  <div className="bg-stone-50">
-
-    {/* 🟢 SHOP BY CATEGORY HEADER */}
-    <button
-      onClick={() =>
-        setNewSection(newSection === "category" ? null : "category")
-      }
-      className="w-full flex items-center justify-between px-5 py-3
+                {/* 🔽 EXPANDED CONTENT */}
+                {mobileExpanded === "new" && (
+                  <div className="bg-stone-50">
+                    {/* 🟢 SHOP BY CATEGORY HEADER */}
+                    <button
+                      onClick={() =>
+                        setNewSection(
+                          newSection === "category" ? null : "category",
+                        )
+                      }
+                      className="w-full flex items-center justify-between px-5 py-3
                  text-xs font-bold text-gray-500 uppercase tracking-wide
                  border-b border-stone-200"
-    >
-      <span>Shop by Category</span>
-      <ChevronDown
-        size={14}
-        className={`transition-transform ${
-          newSection === "category" ? "rotate-180 text-brand" : ""
-        }`}
-      />
-    </button>
+                    >
+                      <span>Shop by Category</span>
+                      <ChevronDown
+                        size={14}
+                        className={`transition-transform ${
+                          newSection === "category"
+                            ? "rotate-180 text-brand"
+                            : ""
+                        }`}
+                      />
+                    </button>
 
-    {/* 🟢 CATEGORY LIST */}
-    {newSection === "category" && (
-      <div>
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => {
-              navigate(`/category/${cat.id}/subcategories`);
-              setMobileOpen(false);
-            }}
-            className="w-full flex items-center justify-between
+                    {/* 🟢 CATEGORY LIST */}
+                    {newSection === "category" && (
+                      <div>
+                        {categories.map((cat) => (
+                          <button
+                            key={cat.id}
+                            onClick={() => {
+                              navigate(`/category/${cat.id}/subcategories`);
+                              setMobileOpen(false);
+                            }}
+                            className="w-full flex items-center justify-between
                        pl-8 pr-5 py-3 text-left text-sm text-stone-600
                        hover:text-brand hover:bg-gray-100 border-b border-stone-100"
-          >
-            <span>{cat.name}</span>
-            <ChevronRight size={13} className="text-stone-300" />
-          </button>
-        ))}
-      </div>
-    )}
+                          >
+                            <span>{cat.name}</span>
+                            <ChevronRight
+                              size={13}
+                              className="text-stone-300"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
 
-    {/* 🟡 FEATURED HEADER */}
-    <button
-      onClick={() =>
-        setNewSection(newSection === "featured" ? null : "featured")
-      }
-      className="w-full flex items-center justify-between px-5 py-3
+                    {/* 🟡 FEATURED HEADER */}
+                    <button
+                      onClick={() =>
+                        setNewSection(
+                          newSection === "featured" ? null : "featured",
+                        )
+                      }
+                      className="w-full flex items-center justify-between px-5 py-3
                  text-xs font-bold text-gray-500 uppercase tracking-wide
                  border-b border-stone-200"
-    >
-      <span>Featured</span>
-      <ChevronDown
-        size={14}
-        className={`transition-transform ${
-          newSection === "featured" ? "rotate-180 text-brand" : ""
-        }`}
-      />
-    </button>
+                    >
+                      <span>Featured</span>
+                      <ChevronDown
+                        size={14}
+                        className={`transition-transform ${
+                          newSection === "featured"
+                            ? "rotate-180 text-brand"
+                            : ""
+                        }`}
+                      />
+                    </button>
 
-    {/* 🟡 FEATURED LIST */}
-    {newSection === "featured" && (
-      <div>
-        <button
-          onClick={() => {
-            navigate("/new-arrivals");
-            setMobileOpen(false);
-          }}
-          className="w-full flex items-center gap-2 pl-8 pr-5 py-3 text-left
+                    {/* 🟡 FEATURED LIST */}
+                    {newSection === "featured" && (
+                      <div>
+                        <button
+                          onClick={() => {
+                            navigate("/new-arrivals");
+                            setMobileOpen(false);
+                          }}
+                          className="w-full flex items-center gap-2 pl-8 pr-5 py-3 text-left
                      text-sm text-stone-600 hover:text-brand hover:bg-gray-100
                      border-b border-stone-100"
-        >
-          <ArrowRight size={13} />
-          Latest Drops
-        </button>
+                        >
+                          <ArrowRight size={13} />
+                          Latest Drops
+                        </button>
 
-        <button
-          onClick={() => {
-            navigate("/most-selling-all");
-            setMobileOpen(false);
-          }}
-          className="w-full flex items-center gap-2 pl-8 pr-5 py-3 text-left
+                        <button
+                          onClick={() => {
+                            navigate("/most-selling-all");
+                            setMobileOpen(false);
+                          }}
+                          className="w-full flex items-center gap-2 pl-8 pr-5 py-3 text-left
                      text-sm text-stone-600 hover:text-brand hover:bg-gray-100
                      border-b border-stone-100"
-        >
-          <ArrowRight size={13} />
-          Best Sellers
-        </button>
-      </div>
-    )}
-
-  </div>
-)}
-</div>
+                        >
+                          <ArrowRight size={13} />
+                          Best Sellers
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               {categories.length === 0 ? (
                 <div className="flex items-center justify-center h-32">
                   <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : (
                 categories.map((cat) => (
-                  <div key={cat.id} className="border-b border-stone-100 last:border-0">
+                  <div
+                    key={cat.id}
+                    className="border-b border-stone-100 last:border-0"
+                  >
                     <button
                       onClick={() =>
                         setMobileExpanded(
-                          mobileExpanded === cat.id ? null : cat.id
+                          mobileExpanded === cat.id ? null : cat.id,
                         )
                       }
                       className="w-full flex items-center justify-between px-5 py-3.5
@@ -716,10 +768,10 @@ useEffect(() => {
                         size={15}
                         className={`text-stone-400 transition-transform duration-200
                                     flex-shrink-0 ${
-                          mobileExpanded === cat.id
-                            ? "rotate-180 text-brand"
-                            : ""
-                        }`}
+                                      mobileExpanded === cat.id
+                                        ? "rotate-180 text-brand"
+                                        : ""
+                                    }`}
                       />
                     </button>
 
@@ -747,7 +799,7 @@ useEffect(() => {
                                 handleSubcategoryClick(
                                   cat.id,
                                   sub.id,
-                                  sub.subsubcategories
+                                  sub.subsubcategories,
                                 )
                               }
                               className="w-full flex items-center justify-between
