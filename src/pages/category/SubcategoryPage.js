@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { ArrowLeft } from 'lucide-react';
-import api from '../../utils/api';
-import logo from '../../images/piclogo.png';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { ArrowLeft } from "lucide-react";
+import api from "../../utils/api";
+import logo from "../../images/piclogo.png";
 
 /* ─── Skeleton card ─────────────────────────────────────────────────────── */
 const SkeletonCard = () => (
@@ -22,13 +22,13 @@ function SubcategoryPage() {
   const navigate = useNavigate();
 
   const [subcategories, setSubcategories] = useState([]);
-  const [categoryName, setCategoryName] = useState('');
+  const [categoryName, setCategoryName] = useState("");
   const [loading, setLoading] = useState(false);
   const [navigating, setNavigating] = useState(false);
 
   /* scroll to top on mount */
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }, []);
 
   /* fetch subcategories */
@@ -40,15 +40,18 @@ function SubcategoryPage() {
         let data = res.data.data || [];
 
         data.sort((a, b) =>
-          a.name.trim().toLowerCase().localeCompare(b.name.trim().toLowerCase(), 'en', {
-            numeric: true,
-            sensitivity: 'base',
-          })
+          a.name
+            .trim()
+            .toLowerCase()
+            .localeCompare(b.name.trim().toLowerCase(), "en", {
+              numeric: true,
+              sensitivity: "base",
+            }),
         );
 
         setSubcategories(data);
         if (data.length > 0) setCategoryName(data[0].category_name);
-        else setCategoryName('');
+        else setCategoryName("");
       } catch (_) {
         /* silent */
       } finally {
@@ -64,13 +67,19 @@ function SubcategoryPage() {
     try {
       const res = await api.get(`/subsubcategory/subcategory/${subcategoryId}`);
       if (!res.data || res.data.length === 0) {
-        navigate(`/products/category/${categoryId}/subcategory/${subcategoryId}`);
+        navigate(
+          `/products/category/${categoryId}/subcategory/${subcategoryId}`,
+        );
       } else {
-        navigate(`/subcategory/category/${categoryId}/subcategory/${subcategoryId}`);
+        navigate(
+          `/subcategory/category/${categoryId}/subcategory/${subcategoryId}`,
+        );
       }
     } catch (err) {
       if (err.response?.status === 404) {
-        navigate(`/products/category/${categoryId}/subcategory/${subcategoryId}`);
+        navigate(
+          `/products/category/${categoryId}/subcategory/${subcategoryId}`,
+        );
       }
     } finally {
       setNavigating(false);
@@ -82,7 +91,11 @@ function SubcategoryPage() {
   return (
     <>
       <Helmet>
-        <title>{categoryName ? `${categoryName} | Kitchenary Kart` : 'Categories | Kitchenary Kart'}</title>
+        <title>
+          {categoryName
+            ? `${categoryName} | Kitchenary Kart`
+            : "Categories | Kitchenary Kart"}
+        </title>
         <meta
           name="description"
           content={`Browse all subcategories under ${categoryName} at Kitchenary Kart.`}
@@ -97,8 +110,7 @@ function SubcategoryPage() {
       )}
 
       <div className="min-h-screen bg-gray-50">
-       <div className="max-w-[1500px] mx-auto px-2 sm:px-4 lg:px-6 py-6 sm:py-8">
-
+        <div className="max-w-[1500px] mx-auto px-2 sm:px-4 lg:px-6 py-6 sm:py-8">
           {/* ── Page header ────────────────────────────────────────── */}
           <div className="flex items-center gap-3 mb-6 sm:mb-8">
             <button
@@ -117,7 +129,7 @@ function SubcategoryPage() {
                 Shop by Category
               </p>
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 leading-tight">
-                {categoryName || 'Categories'}
+                {categoryName || "Categories"}
               </h1>
             </div>
           </div>
@@ -136,7 +148,7 @@ function SubcategoryPage() {
                   key={sub.id}
                   onClick={() => handleClick(id, sub.id)}
                   aria-label={`Browse ${sub.name}`}
-                 className="group cursor-pointer"
+                  className="group cursor-pointer"
                 >
                   {/* Image */}
                   <div className="w-full aspect-square bg-white flex items-center justify-center p-2 sm:p-3 overflow-hidden">
@@ -154,11 +166,11 @@ function SubcategoryPage() {
 
                   {/* Label */}
                   <div className="pt-3 px-1">
-  <h3 className="relative inline-block text-sm sm:text-base font-medium text-gray-800">
-  {sub.name}
+                    <h3 className="relative inline-block text-sm sm:text-base font-medium text-gray-800">
+                      {sub.name}
 
-  <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-[#B91C1C] transition-all duration-300 group-hover:w-full"></span>
-</h3>
+                      <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-[#B91C1C] transition-all duration-300 group-hover:w-full"></span>
+                    </h3>
                   </div>
                 </button>
               ))}
@@ -183,7 +195,6 @@ function SubcategoryPage() {
               <p className="text-sm font-medium">No subcategories available</p>
             </div>
           )}
-
         </div>
       </div>
     </>

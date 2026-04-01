@@ -283,6 +283,12 @@ const ProductDetails = () => {
     }
   };
 
+  useEffect(() => {
+    if (!currentVariant?.id) return;
+
+    fetchQAs();
+  }, [currentVariant]);
+
   const handleShowMoreQA = () => setVisibleQACount((p) => p + 3);
   const handleShowMore = () => setVisibleCount((p) => p + 3);
   const handleShowLess = () => setVisibleCount((p) => Math.max(3, p - 3));
@@ -622,6 +628,21 @@ const ProductDetails = () => {
       (currentVariant?.video_url ? 1 : 0);
     setCurrentIndex((prev) => (prev === 0 ? total - 1 : prev - 1));
   };
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!currentVariant?.id) return;
+
+      try {
+        const res = await api.get(`/Reviews/variant/${currentVariant.id}`);
+        setReviews(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch reviews", err);
+      }
+    };
+
+    fetchReviews();
+  }, [currentVariant]);
 
   // Average rating
   const avgRating =
