@@ -331,6 +331,7 @@ if (response.data && response.data.id) {
                     name="taxPercentage"
                     value={product.taxPercentage}
                     onChange={handleChange}
+                     onWheel={(e) => e.target.blur()}
                     onKeyDown={(e) => handleEnterKey(e, inputRefs.hsn_code)}
                     inputProps={{ min: 0, max: 100 }}
                 />

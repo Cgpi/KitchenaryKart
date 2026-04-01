@@ -369,22 +369,24 @@ const handleUpdateRelatedProducts = async () => {
           </label>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-semibold mb-2">Tax Percentage</label>
-          <div className="flex gap-2 items-center">
-            <input
-              type="number"
-              name="taxPercentage"
-              value={product.taxPercentage || ""}
-              onChange={handleChange}
-              required
-              min="0"
-              max="100"
-              className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <span className="text-sm">%</span>
-          </div>
-        </div>
+       <div className="mb-4">
+  <label className="block text-sm font-semibold mb-2">Tax Percentage</label>
+  <div className="flex gap-2 items-center">
+    <input
+      type="number"
+      name="taxPercentage"
+      value={product.taxPercentage || ""}
+      onChange={handleChange}
+      // Add this line below to disable scroll-to-change
+      onWheel={(e) => e.target.blur()} 
+      required
+      min="0"
+      max="100"
+      className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    <span className="text-sm">%</span>
+  </div>
+</div>
 
         <div className="mb-4">
           <label className="block text-sm font-semibold mb-2">HSN Code</label>

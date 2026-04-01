@@ -1108,7 +1108,7 @@ const ProductDetails = () => {
                       {currentVariant.otherDimensions}
                     </span>
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 ml-0.5">
                     {Object.entries(otherDimensions).map(([od, image]) => (
                       <button
                         key={od}
@@ -1659,7 +1659,7 @@ const ProductDetails = () => {
                                       >
                                         <div className="flex items-center gap-2 mb-1">
                                           <span className="inline-flex items-center px-2 py-0.5 bg-brand text-white text-[10px] font-bold rounded-full">
-                                            Support
+                                            support@kitchenarykart.com
                                           </span>
                                           <span className="text-[10px] text-stone-400">
                                             {new Date(
@@ -1778,7 +1778,7 @@ const ProductDetails = () => {
                                   </span>
                                   <div>
                                     <span className="inline-flex items-center px-2 py-0.5 bg-brand text-white text-[10px] font-bold rounded-full mr-2">
-                                      Support
+                                      support@kitchenarykart.com
                                     </span>
                                     <span className="text-sm text-stone-600">
                                       {qa.answer}
@@ -1863,6 +1863,7 @@ const ProductDetails = () => {
                     </div>
                   </div>
                 )}
+                
             </div>
             {/* end RIGHT */}
           </div>
