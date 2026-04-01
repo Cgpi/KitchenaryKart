@@ -3,9 +3,10 @@ import api from "./utils/api";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import logo from "./images/piclogo.png";
+import { StarRating } from "./components/common/StarRating";
 
 /* ✅ PRODUCT CARD (CLEAN + REUSABLE) */
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, ratings }) => {
   const navigate = useNavigate();
 
   const [selectedVariation, setSelectedVariation] = useState("");
@@ -51,6 +52,7 @@ const ProductCard = ({ product }) => {
     : variant?.images?.[0] || logo;
 
   const price = variant?.price_with_gst || variant?.price || null;
+  const ratingValue = variant ? ratings?.[variant.id] : null;
 
   return (
     <div
@@ -76,6 +78,12 @@ const ProductCard = ({ product }) => {
         <p className="text-sm font-semibold text-gray-800 line-clamp-2 min-h-[40px]">
           {product.name}
         </p>
+
+        {ratingValue && (
+          <div className="mt-1 flex justify-center">
+            <StarRating rating={ratingValue} size={12} />
+          </div>
+        )}
 
         {price && (
           <p className="text-sm font-bold text-black mt-1">
@@ -129,13 +137,38 @@ const MostSellingProductList = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const [ratings, setRatings] = useState({});
+
   useEffect(() => {
     api
       .get("/product/most_selling")
-      .then((res) => setProducts(res.data || []))
+      .then((res) => {
+        const data = res.data || [];
+        setProducts(data);
+
+        data.forEach((p) =>
+          p.variants?.forEach((v) => fetchVariantReviews(v.id)),
+        );
+      })
       .catch((err) => console.error("Fetch failed", err))
       .finally(() => setLoading(false));
   }, []);
+
+  const fetchVariantReviews = async (variantId) => {
+    try {
+      const { data } = await api.get(`/Reviews/variant/${variantId}`);
+      if (Array.isArray(data) && data.length) {
+        const avg =
+          data.reduce((s, r) => s + (r.rating || 0), 0) / data.length;
+        setRatings((prev) => ({
+          ...prev,
+          [variantId]: avg,
+        }));
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
 
   const visibleProducts = products.slice(0, 8);
 
@@ -195,7 +228,11 @@ const MostSellingProductList = () => {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {visibleProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  ratings={ratings}
+                />
               ))}
             </div>
           )}

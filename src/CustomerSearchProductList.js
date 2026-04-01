@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import api from "./utils/api";
 import logo from "./images/piclogo.png";
+import { StarRating } from "./components/common/StarRating";
 
 /* 🔥 PRICE + SORT */
 const pricePresets = [
@@ -27,7 +28,7 @@ const sortOptions = [
   { value: "desc", label: "Price, high to low" },
 ];
 
-const ProductCard = ({ product, onClick }) => {
+const ProductCard = ({ product, onClick, ratings }) => {
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedDimension, setSelectedDimension] = useState("");
 
@@ -96,6 +97,8 @@ const ProductCard = ({ product, onClick }) => {
 
   const subcat = product.subcategories?.[0]?.name || "Category";
 
+  const ratingValue = variant ? ratings?.[variant.id] : null;
+
   return (
     <div
       onClick={() =>
@@ -138,6 +141,12 @@ const ProductCard = ({ product, onClick }) => {
       <p className="text-xs text-stone-400 uppercase">{subcat}</p>
 
       <p className="text-base font-medium line-clamp-2 mt-1">{product.name}</p>
+
+      <div className="mt-1">
+        {ratingValue ? (
+          <StarRating rating={ratingValue} size={12} />
+        ) : null}
+      </div>
 
       <div className="flex items-center justify-between gap-2 mt-1">
         <div>
@@ -199,6 +208,8 @@ const CustomerSearchProductList = () => {
   const [noResults, setNoResults] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [ratings, setRatings] = useState({});
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -218,12 +229,33 @@ const CustomerSearchProductList = () => {
       const data = Array.isArray(res.data) ? res.data : [];
       setProducts(data);
       setNoResults(data.length === 0);
+
+      // fetch ratings per variant
+      data.forEach((p) =>
+        p.variants?.forEach((v) => fetchVariantReviews(v.id)),
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const getVariant = (v) => v.find((x) => x.stock > 0);
+
+  const fetchVariantReviews = async (variantId) => {
+    try {
+      const { data } = await api.get(`/Reviews/variant/${variantId}`);
+      if (Array.isArray(data) && data.length) {
+        const avg =
+          data.reduce((s, r) => s + (r.rating || 0), 0) / data.length;
+        setRatings((prev) => ({
+          ...prev,
+          [variantId]: avg,
+        }));
+      }
+    } catch (e) {
+      // ignore rating errors
+    }
+  };
 
   const filteredProducts = useMemo(() => {
     return [...products]
@@ -310,8 +342,8 @@ const CustomerSearchProductList = () => {
               <ProductCard
                 key={p.id}
                 product={p}
-                getVariant={getVariant}
                 onClick={() => navigate(`/product/${p.id}?name=${p.name}`)}
+                ratings={ratings}
               />
             ))
           )}

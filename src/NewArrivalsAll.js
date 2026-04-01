@@ -5,9 +5,11 @@ import { useProductList } from "./hooks/useProductList";
 import logo from "./images/piclogo.png";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { StarRating } from "./components/common/StarRating";
+import api from "./utils/api";
 
 /* ⭐ PRODUCT CARD */
-const ProductCard = ({ product, getVariant, onClick }) => {
+const ProductCard = ({ product, getVariant, onClick, ratings }) => {
   const [selectedDimension, setSelectedDimension] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
 
@@ -53,6 +55,8 @@ const ProductCard = ({ product, getVariant, onClick }) => {
     product.subcategories?.length > 0 ? product.subcategories[0].name : "";
 
   const { dimensions, colors } = getVariantOptions(product.variants || []);
+
+  const ratingValue = variant ? ratings?.[variant.id] : null;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lastIndex, setLastIndex] = useState(0);
@@ -164,6 +168,12 @@ const ProductCard = ({ product, getVariant, onClick }) => {
 
       <p className="text-sm font-medium line-clamp-2">{product.name}</p>
 
+      {ratingValue && (
+        <div className="mt-1">
+          <StarRating rating={ratingValue} size={12} />
+        </div>
+      )}
+
       {price && (
         <div className="flex items-center justify-between gap-2 mt-1">
           <p className="font-semibold text-gray-900">
@@ -215,9 +225,33 @@ const AllNewArrivals = () => {
   const { filteredProducts, loading, getFirstAvailableVariant } =
     useProductList("/product/new_arrivals");
 
+  const [ratings, setRatings] = useState({});
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  useEffect(() => {
+    filteredProducts.forEach((product) =>
+      product.variants?.forEach((v) => fetchVariantReviews(v.id)),
+    );
+  }, [filteredProducts]);
+
+  const fetchVariantReviews = async (variantId) => {
+    try {
+      const { data } = await api.get(`/Reviews/variant/${variantId}`);
+      if (Array.isArray(data) && data.length) {
+        const avg =
+          data.reduce((s, r) => s + (r.rating || 0), 0) / data.length;
+        setRatings((prev) => ({
+          ...prev,
+          [variantId]: avg,
+        }));
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
 
   const handleClick = (product, variant) => {
     navigate(
@@ -269,6 +303,7 @@ const AllNewArrivals = () => {
                 key={product.id}
                 product={product}
                 getVariant={getFirstAvailableVariant}
+                ratings={ratings}
                 onClick={handleClick}
               />
             ))}

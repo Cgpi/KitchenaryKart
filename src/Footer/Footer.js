@@ -286,7 +286,7 @@ const Footer = () => {
                       <Phone size={13} style={{ color: "#B91C1C" }} strokeWidth={2} />
                     </div>
                     <div>
-                      <p style={{ color: "#1c1917", fontSize: 14, fontWeight: 600, margin: 0 }}>+91 8806807419</p>
+                      <p style={{ color: "#1c1917", fontSize: 14, fontWeight: 600, margin: 0 }}>+91 9890352455</p>
                       <p style={{ color: "#a8a29e", fontSize: 12, margin: "3px 0 0" }}>Call us anytime</p>
                     </div>
                   </a>
