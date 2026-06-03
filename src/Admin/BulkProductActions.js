@@ -42,8 +42,13 @@ const BulkProductActions = () => {
   };
 
   // ✅ Upload
-  const uploadFile = async (url, file, label) => {
+  const uploadFile = async (url, file, label, resetInput) => {
     if (!file) return alert("Select file");
+
+    // ✅ CSV validation
+    if (!file.name.endsWith(".csv")) {
+      return alert("Only CSV files allowed");
+    }
 
     const token = localStorage.getItem("adminToken");
     if (!token) return alert("Login required");
@@ -62,6 +67,7 @@ const BulkProductActions = () => {
       });
 
       alert(`${label} uploaded successfully`);
+      if (resetInput) resetInput(); // ✅ reset file input
     } catch (err) {
       alert(getErrorMessage(err));
     } finally {
@@ -104,51 +110,57 @@ const BulkProductActions = () => {
   );
 
   // ✅ Upload Block
-  const UploadBlock = ({ sampleApi, importApi, label }) => (
-    <div className="flex flex-col gap-3">
+  const UploadBlock = ({ sampleApi, importApi, label }) => {
+    const handleChange = (e) => {
+      const file = e.target.files[0];
+      uploadFile(importApi, file, label, () => {
+        e.target.value = null; // reset
+      });
+    };
 
-      {/* Download Sample */}
-      <button
-        disabled={loading === label}
-        onClick={() =>
-          downloadFile(sampleApi, `${label}_sample.csv`, label)
-        }
-        className="bg-gray-700 text-white text-xs px-3 py-2 rounded flex items-center justify-center gap-2 disabled:opacity-50"
-      >
-        {loading === label ? (
-          <>
-            <Spinner />
-            Downloading...
-          </>
-        ) : (
-          "Download Sample"
+    return (
+      <div className="flex flex-col gap-3">
+        {/* Download Sample */}
+        <button
+          disabled={loading === label}
+          onClick={() =>
+            downloadFile(sampleApi, `${label}_sample.csv`, label)
+          }
+          className="bg-gray-700 text-white text-xs px-3 py-2 rounded flex items-center justify-center gap-2 disabled:opacity-50"
+        >
+          {loading === label ? (
+            <>
+              <Spinner />
+              Downloading...
+            </>
+          ) : (
+            "Download Sample"
+          )}
+        </button>
+
+        {/* Upload */}
+        <input
+          type="file"
+          disabled={loading === label}
+          onChange={handleChange}
+          className="text-xs"
+        />
+
+        {/* Loader */}
+        {loading === label && (
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <SmallSpinner />
+            Processing file...
+          </div>
         )}
-      </button>
-
-      {/* Upload */}
-      <input
-        type="file"
-        disabled={loading === label}
-        onChange={(e) =>
-          uploadFile(importApi, e.target.files[0], label)
-        }
-        className="text-xs"
-      />
-
-      {/* Loader Text */}
-      {loading === label && (
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <SmallSpinner />
-          Processing file...
-        </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  };
 
   return (
-    <div className="grid md:grid-cols-3 gap-6">
+    <div className="grid md:grid-cols-3 gap-6 py-4">
 
-      {/* PRODUCTS */}
+      {/* PRODUCTS
       <Card title="📦 Products">
         <AccordionItem id="p1" title="Export Products">
           <button
@@ -179,7 +191,7 @@ const BulkProductActions = () => {
                 "export-products-variants"
               )
             }
-            className="bg-black text-white px-4 py-2 rounded text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            className="bg-black text-white px-4 py-2 rounded text-sm"
           >
             {loading === "export-products-variants" ? (
               <>
@@ -199,8 +211,44 @@ const BulkProductActions = () => {
             label="products-import"
           />
         </AccordionItem>
-      </Card>
+      </Card> */}
+{/* ✅ NEW COMBINED BLOCK */}
+      <Card title="📂 Combined Data" >
+        <AccordionItem id="c1" title="Export Full Catalog">
+          <button
+            disabled={loading === "export-full-catalog"}
+            onClick={() =>
+              downloadFile(
+                "/api/products/export-with-variants",
+                "full_catalog.csv",
+                "export-full-catalog"
+              )
+            }
+            className="bg-black text-white px-4 py-2 rounded text-sm"
+          >
+            {loading === "export-full-catalog" ? (
+              <>
+                <Spinner />
+                Exporting...
+              </>
+            ) : (
+              "Export Full Catalog"
+            )}
+          </button>
+        </AccordionItem>
 
+        <AccordionItem id="c2" title="Import Products + Variants">
+          <p className="text-xs text-gray-500 mb-2">
+            Upload one CSV containing both product and variant data
+          </p>
+
+          <UploadBlock
+            sampleApi="/api/products/sample-with-variants"
+            importApi="/api/products/import-with-variants"
+            label="products-variants-import"
+          />
+        </AccordionItem>
+      </Card>
       {/* VARIANTS */}
       <Card title="🧩 Variants">
         <AccordionItem id="v1" title="Export Variants">
@@ -209,23 +257,16 @@ const BulkProductActions = () => {
             onClick={() =>
               downloadFile("/api/variants/export", "variants.csv", "export-variants")
             }
-            className="bg-black text-white px-4 py-2 rounded text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            className="bg-black text-white px-4 py-2 rounded text-sm"
           >
-            {loading === "export-variants" ? (
-              <>
-                <Spinner />
-                Exporting...
-              </>
-            ) : (
-              "Export Variants"
-            )}
+            {loading === "export-variants" ? <Spinner /> : "Export Variants"}
           </button>
         </AccordionItem>
 
         <AccordionItem id="v2" title="Import Variants">
           <UploadBlock
             sampleApi="/api/variants/sample"
-            importApi="/api/variants/import-zip"
+            importApi="/api/variants/import"
             label="variants-import"
           />
         </AccordionItem>
@@ -243,16 +284,9 @@ const BulkProductActions = () => {
                 "export-prices"
               )
             }
-            className="bg-black text-white px-4 py-2 rounded text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            className="bg-black text-white px-4 py-2 rounded text-sm"
           >
-            {loading === "export-prices" ? (
-              <>
-                <Spinner />
-                Exporting...
-              </>
-            ) : (
-              "Export Prices"
-            )}
+            {loading === "export-prices" ? <Spinner /> : "Export Prices"}
           </button>
         </AccordionItem>
 
@@ -264,6 +298,8 @@ const BulkProductActions = () => {
           />
         </AccordionItem>
       </Card>
+
+      
 
     </div>
   );

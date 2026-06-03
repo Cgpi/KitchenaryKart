@@ -33,11 +33,11 @@ const [firmName, setFirmName] = useState("");
    const [showInput, setShowInput] = useState(false);
 
   const rawTotal =
-  parseFloat(cartTotal) +
-  parseFloat(shippingCharges) -
-  parseFloat(discountAmount);
+  Number(cartTotal || 0) +
+  Number(shippingCharges || 0) -
+  Number(discountAmount || 0);
 
-const totalAmount = Math.floor(rawTotal) + (rawTotal % 1 >= 0.5 ? 1 : 0);
+const totalAmount = Math.round(rawTotal);
 
 
   // Load user
@@ -252,7 +252,7 @@ if (firmName.trim()) formData.append("firm_name", firmName);  // ✅ Add this li
                 {/* Username */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                  {isEditing ? (
+                  {isEditing ? ( 
                     <input
                       type="text"
                       name="username"

@@ -44,42 +44,55 @@ const ProfilePage = () => {
     );
   };
 
-  /* ── DESKTOP SIDEBAR ── */
-  const Sidebar = () => (
-    <aside className="hidden md:flex flex-col flex-shrink-0 w-56 min-h-screen bg-white border-r border-gray-100 sticky top-0 self-start">
-      {/* User block */}
-      <div className="px-4 pt-8 pb-6 border-b border-gray-100">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0 select-none"
-            style={{ background: "linear-gradient(135deg, #7f1d1d, #b91c1c)" }}>
-            {initials}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-gray-900 truncate leading-tight">{user?.username || "Guest"}</p>
-            <p className="text-xs text-gray-400 truncate">{user?.email || ""}</p>
-          </div>
+ /* ── DESKTOP SIDEBAR ── */
+const Sidebar = () => (
+  <aside className="hidden md:flex flex-col flex-shrink-0 w-56 h-screen bg-white border-r border-gray-100 sticky top-0">
+    
+    {/* User block */}
+    <div className="px-4 pt-8 pb-6 border-b border-gray-100">
+      <div className="flex items-center gap-3">
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0 select-none"
+          style={{ background: "linear-gradient(135deg, #7f1d1d, #b91c1c)" }}
+        >
+          {initials}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-gray-900 truncate leading-tight">
+            {user?.username || "Guest"}
+          </p>
+          <p className="text-xs text-gray-400 truncate">
+            {user?.email || ""}
+          </p>
         </div>
       </div>
+    </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
-        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-300">Menu</p>
-        {navItems.map((item) => <NavItem key={item.path} {...item} />)}
-      </nav>
+    {/* Nav + Logout together */}
+    <nav className="px-3 py-4 space-y-0.5">
+      <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-300">
+        Menu
+      </p>
 
-      {/* Logout */}
-      <div className="px-3 pb-8">
-        <div className="h-px bg-gray-100 mb-3" />
-        <button
-          onClick={logout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all"
-        >
-          <LogOut size={15} />
-          Sign Out
-        </button>
-      </div>
-    </aside>
-  );
+      {navItems.map((item) => (
+        <NavItem key={item.path} {...item} />
+      ))}
+
+      {/* Divider */}
+      <div className="h-px bg-gray-100 my-3" />
+
+      {/* Logout directly below menu */}
+      <button
+        onClick={logout}
+        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all"
+      >
+        <LogOut size={15} />
+        Sign Out
+      </button>
+    </nav>
+
+  </aside>
+);
 
   /* ── MOBILE TOP BAR ── */
   const MobileBar = () => (

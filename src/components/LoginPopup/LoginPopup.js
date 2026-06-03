@@ -51,9 +51,9 @@ const LoginPopup = ({ onClose }) => {
         setMessage("Login successful!");
         setMessageType("success");
 
-        setTimeout(() => {
-          navigate("/profile");
-        }, 1500);
+       setTimeout(() => {
+  navigate(-1); // 👈 go back to previous page
+}, 1500);
       } else {
         setMessage(data.message || "Invalid email or password.");
         setMessageType("error");
